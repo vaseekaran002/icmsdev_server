@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.perksoft.icms.contants.Constants;
+import com.perksoft.icms.exception.IcmsCustomException;
 import com.perksoft.icms.models.ERole;
 import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
@@ -37,6 +41,7 @@ import com.perksoft.icms.repository.TenantRepository;
 import com.perksoft.icms.repository.UserRepository;
 import com.perksoft.icms.security.jwt.JwtUtils;
 import com.perksoft.icms.security.services.UserDetailsImpl;
+import com.perksoft.icms.util.CommonUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,6 +53,8 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping("/auth/{tenantid}")
 @Api(value = "Authentication service")
 public class AuthController {
+	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
+	
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
@@ -66,6 +73,9 @@ public class AuthController {
 	@Autowired
 	private JwtUtils jwtUtils;
 
+	@Autowired
+	private CommonUtil commonUtil;
+
 	@ApiOperation(value = "sign user", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves token and user details"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -74,34 +84,51 @@ public class AuthController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/signin")
-	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+	public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
 			@PathVariable("tenantid") String tenantId) {
+		LOGGER.info("Started `authenticateUser for tenantId {}", tenantId);
+		ResponseEntity<String> responseEntity = null;
 
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+		
+		try {
+			Authentication authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		String jwt = jwtUtils.generateJwtToken(authentication);
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			String jwt = jwtUtils.generateJwtToken(authentication);
 
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
-				.collect(Collectors.toList());
-		Optional<Tenant> existingTenant = tenantRepository.findById(UUID.fromString(tenantId));
-		Set<MetaData> finalmetadata = new HashSet<>();
+			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+			List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
+					.collect(Collectors.toList());
+			Optional<Tenant> existingTenant = tenantRepository.findById(UUID.fromString(tenantId));
+			Set<MetaData> finalmetadata = new HashSet<>();
 
-		if (existingTenant.isPresent()) {
-			Set<MetaData> metadataSet = existingTenant.get().getMetaData();
-			
-			for (MetaData metaData : metadataSet) {
-				
-				if(roles.contains(metaData.getRole())) {
-					finalmetadata.add(metaData);
+			if (existingTenant.isPresent()) {
+				Set<MetaData> metadataSet = existingTenant.get().getMetaData();
+
+				for (MetaData metaData : metadataSet) {
+
+					if (roles.contains(metaData.getRole())) {
+						finalmetadata.add(metaData);
+					}
 				}
 			}
-		}
 
-		return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
-				userDetails.getEmail(), roles, finalmetadata));
+			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
+					userDetails.getEmail(), roles, finalmetadata);
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+					jwtResponse);
+
+		} catch (IcmsCustomException e) {
+			LOGGER.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (Exception e) {
+			LOGGER.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+					Constants.EXCEPTION);
+		}
+		LOGGER.info("End of `authenticateUser and response {}", responseEntity);
+		return responseEntity;
 	}
 
 	@ApiOperation(value = "Successfully created new user", response = List.class)
@@ -150,7 +177,7 @@ public class AuthController {
 					break;
 				case "ROLE_MUSICIAN":
 					Role musRole = roleRepository.findByName(ERole.MUSICIAN)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 					roles.add(musRole);
 					break;
 				default:

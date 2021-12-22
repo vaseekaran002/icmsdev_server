@@ -60,7 +60,6 @@ public class CommentController {
 	@GetMapping("/{postid}/list")
 	public ResponseEntity<?> getAllCommentsByPost(@PathVariable("tenantid") String tenantId,
 			@PathVariable("postid") Long postId, @RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size) {
-		System.out.println("=====postid===="+postId);
 		List<CommentResponse> commentResponses = commentService.getAllCommentsByPostId(postId,
 				UUID.fromString(tenantId), from, size);
 		return ResponseEntity.ok(commentResponses);
