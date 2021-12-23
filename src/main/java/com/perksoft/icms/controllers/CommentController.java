@@ -55,7 +55,7 @@ public class CommentController {
 	@PostMapping("/update")
 	public ResponseEntity<String> updateComment(@PathVariable("tenantid") String tenantId,
 			@Valid @RequestBody CommentRequest commentRequest) {
-		LOGGER.info("Started `creating comment for tenant {}", tenantId);
+		LOGGER.info("Started creating comment for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try{
 			commentRequest.setTenantId(UUID.fromString(tenantId));

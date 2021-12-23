@@ -86,7 +86,7 @@ public class AuthController {
 	@PostMapping("/signin")
 	public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
 			@PathVariable("tenantid") String tenantId) {
-		LOGGER.info("Started `authenticateUser for tenantId {}", tenantId);
+		LOGGER.info("Started authenticateUser for tenantId {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 
 		
@@ -127,7 +127,7 @@ public class AuthController {
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of `authenticateUser and response {}", responseEntity);
+		LOGGER.info("End of authenticateUser and response {}", responseEntity);
 		return responseEntity;
 	}
 
