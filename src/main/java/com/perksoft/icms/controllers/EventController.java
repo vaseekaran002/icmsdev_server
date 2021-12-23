@@ -54,7 +54,7 @@ public class EventController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/update")
-	public ResponseEntity<?> updateEvent(@PathVariable("tenantid") String tenantId,
+	public ResponseEntity<String> updateEvent(@PathVariable("tenantid") String tenantId,
 			@RequestBody EventRequest eventRequest) throws ParseException {
 		LOGGER.info("Started Creating/Updating Event for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
@@ -77,7 +77,7 @@ public class EventController {
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<?> getAllEvents(@PathVariable("tenantid") String tenantId) {
+	public ResponseEntity<String> getAllEvents(@PathVariable("tenantid") String tenantId) {
 		LOGGER.info("Started fetching Event for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
@@ -98,7 +98,7 @@ public class EventController {
 	}
 
 	@GetMapping("/bands")
-	public ResponseEntity<?> getAllBandInTownEvents(@PathVariable("tenantid") String tenantId) {
+	public ResponseEntity<String> getAllBandInTownEvents(@PathVariable("tenantid") String tenantId) {
 		LOGGER.info("Started fetching Band for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
@@ -119,7 +119,7 @@ public class EventController {
 	}
 
 	@GetMapping("/{eventId}")
-	public ResponseEntity<?> getEvevtById(@PathVariable("eventId") Long eventId) {
+	public ResponseEntity<String> getEvevtById(@PathVariable("eventId") Long eventId) {
 		LOGGER.info("Started fetching  event {}", eventId);
 		ResponseEntity<String> responseEntity = null;
 		try {

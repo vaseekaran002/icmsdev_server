@@ -141,57 +141,75 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@PathVariable("tenantid") String tenantId,
 			@Valid @RequestBody SignupRequest signUpRequest) {
+		
+		LOGGER.info("Started signing up user for tenantId {}", tenantId);
+		ResponseEntity<String> responseEntity = null;
+		
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Username is already taken!"));
+			LOGGER.info("Error occurred while signing up user {}", "Username is already taken!");
+			responseEntity = commonUtil.generateEntityResponse("Username is already taken!", Constants.FAILURE, Constants.FAILURE);
 		}
 		// need to add email validation method
 		if (userRepository.existsByUsername(signUpRequest.getEmail())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Email is already in use!"));
+			LOGGER.info("Error occurred while signing up user {}", "Email is already in use!");
+			responseEntity = commonUtil.generateEntityResponse("Email is already in use!", Constants.FAILURE, Constants.FAILURE);
 		}
 
-		// Create new user's account
-		User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(),
-				encoder.encode(signUpRequest.getPassword()));
+		try {
+			// Create new user's account
+			User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(),
+					encoder.encode(signUpRequest.getPassword()));
 
-		Set<String> strRoles = signUpRequest.getRole();
-		Set<Role> roles = new HashSet<>();
+			Set<String> strRoles = signUpRequest.getRole();
+			Set<Role> roles = new HashSet<>();
 
-		if (strRoles == null) {
-			Role userRole = roleRepository.findByName(ERole.USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-			roles.add(userRole);
-		} else {
-			strRoles.forEach(role -> {
-				switch (role) {
-				case "superadmin":
-					Role adminRole = roleRepository.findByName(ERole.SUPER_ADMIN)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(adminRole);
+			if (strRoles == null) {
+				Role userRole = roleRepository.findByName(ERole.USER)
+						.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+				roles.add(userRole);
+			} else {
+				strRoles.forEach(role -> {
+					switch (role) {
+					case "superadmin":
+						Role adminRole = roleRepository.findByName(ERole.SUPER_ADMIN)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(adminRole);
 
-					break;
-				case "tenantadmin":
-					Role modRole = roleRepository.findByName(ERole.TENANT_ADMIN)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(modRole);
+						break;
+					case "tenantadmin":
+						Role modRole = roleRepository.findByName(ERole.TENANT_ADMIN)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(modRole);
 
-					break;
-				case "ROLE_MUSICIAN":
-					Role musRole = roleRepository.findByName(ERole.MUSICIAN)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(musRole);
-					break;
-				default:
-					Role userRole = roleRepository.findByName(ERole.USER)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(userRole);
-				}
-			});
+						break;
+					case "ROLE_MUSICIAN":
+						Role musRole = roleRepository.findByName(ERole.MUSICIAN)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(musRole);
+						break;
+					default:
+						Role userRole = roleRepository.findByName(ERole.USER)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(userRole);
+					}
+				});
+			}
+
+			user.setRoles(roles);
+			user.setTenantId(UUID.fromString(tenantId));
+			userRepository.save(user);
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+					user);
 		}
-
-		user.setRoles(roles);
-		user.setTenantId(UUID.fromString(tenantId));
-		userRepository.save(user);
-
-		return ResponseEntity.ok(user);
+		catch (IcmsCustomException e) {
+			LOGGER.info("Error occurred while signing up user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (Exception e) {
+			LOGGER.info("Error occurred while signing up user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+					Constants.EXCEPTION);
+		}
+		LOGGER.info("End of signing up user and response {}", responseEntity);
+		return responseEntity;
 	}
 }
