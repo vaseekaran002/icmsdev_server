@@ -96,7 +96,7 @@ public class PostController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/list")
-	public ResponseEntity<?> getAllPost(@PathVariable("tenantid") String tenantId,
+	public ResponseEntity<String> getAllPost(@PathVariable("tenantid") String tenantId,
 			@RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size) {
 		LOGGER.info("Started fetching all posts for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
@@ -135,7 +135,7 @@ public class PostController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/{pageId}/list")
-	public ResponseEntity<?> getAllPostByPageId(@PathVariable("pageId") String pageId,
+	public ResponseEntity<String> getAllPostByPageId(@PathVariable("pageId") String pageId,
 			@RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size){
 		LOGGER.info("Started fetching all posts for page id {}", pageId);
 		ResponseEntity<String> responseEntity = null;
@@ -164,7 +164,7 @@ public class PostController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/group/{groupId}/list")
-	public ResponseEntity<?> getAllPostByGroupId(@PathVariable("groupId") Long groupId,
+	public ResponseEntity<String> getAllPostByGroupId(@PathVariable("groupId") Long groupId,
 			@RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size){
 		LOGGER.info("Started fetching all posts for group id {}", groupId);
 		ResponseEntity<String> responseEntity = null;
