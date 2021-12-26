@@ -214,7 +214,7 @@ public class TenantController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("{tenantid}/metadata")
-	public ResponseEntity<?> getTenantMetadata(@PathVariable("tenantid") String tenantId) throws Exception {
+	public ResponseEntity<String> getTenantMetadata(@PathVariable("tenantid") String tenantId) throws Exception {
 		LOGGER.info("Started fetching metadata for tenant {}",tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
@@ -223,19 +223,19 @@ public class TenantController {
 				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 						optionalTenant.get().getMetaData());	
 			} else {
-				LOGGER.info("Error occurred while mapping metadata for tenant {}", "no metadata found");
+				LOGGER.info("Error occurred while fetching metadata for tenant {}", "no metadata found");
 				responseEntity = commonUtil.generateEntityResponse("no metadata found", Constants.FAILURE, Constants.FAILURE);
 			}
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while mapping metadata for tenant {}", e.getMessage());
+			LOGGER.info("Error occurred while fetching  metadata for tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while mapping metadata for tenant {}", e.getMessage());
+			LOGGER.info("Error occurred while fetching metadata for tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of  mapping metadata for tenant and response {}", responseEntity);
+		LOGGER.info("End of fetching metadata for tenant and response {}", responseEntity);
 		return responseEntity;
 	}
 }
