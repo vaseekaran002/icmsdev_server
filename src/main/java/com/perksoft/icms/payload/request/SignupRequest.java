@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.validation.constraints.*;
 
 import com.perksoft.icms.models.Group;
+import com.perksoft.icms.models.Role;
  
 public class SignupRequest {
     @NotBlank
@@ -38,7 +39,7 @@ public class SignupRequest {
 	
 	private byte[] profileImage;
 
-	
+	private Set<Role> roles;
 	
 	
 
@@ -120,6 +121,14 @@ public class SignupRequest {
 
 	public void setProfileImage(byte[] profileImage) {
 		this.profileImage = profileImage;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
 	}
     
 	
