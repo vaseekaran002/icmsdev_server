@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active:
+    -  local
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        lob:
+          non_contextual_creation: true
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    # Hibernate ddl auto (create, create-drop, validate, update)
+    hibernate:
+      ddl-auto: update
