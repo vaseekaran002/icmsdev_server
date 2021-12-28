@@ -6,3 +6,4 @@
 **/.factorypath
 *.bak
 **/*.log
+/.DS_Store
