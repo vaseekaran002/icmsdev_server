@@ -5,8 +5,6 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -30,14 +28,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/{tenantid}/comment")
 @Api(value = "Comments service")
 public class CommentController {
-	
-	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
 	
 	@Autowired
 	private CommonUtil commonUtil;
@@ -55,7 +53,7 @@ public class CommentController {
 	@PostMapping("/update")
 	public ResponseEntity<String> updateComment(@PathVariable("tenantid") String tenantId,
 			@Valid @RequestBody CommentRequest commentRequest) {
-		LOGGER.info("Started creating comment for tenant {}", tenantId);
+		log.info("Started creating comment for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try{
 			commentRequest.setTenantId(UUID.fromString(tenantId));
@@ -64,14 +62,14 @@ public class CommentController {
 					new MessageResponse("Comment updated successfully!"));
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while creating comment {}", e.getMessage());
+			log.info("Error occurred while creating comment {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while creating comment {}", e.getMessage());
+			log.info("Error occurred while creating comment {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of creating comment and response {}", responseEntity);
+		log.info("End of creating comment and response {}", responseEntity);
 		return responseEntity;
 		
 	}
@@ -86,7 +84,7 @@ public class CommentController {
 	@GetMapping("/{postid}/list")
 	public ResponseEntity<String> getAllCommentsByPost(@PathVariable("tenantid") String tenantId,
 			@PathVariable("postid") Long postId, @RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size) {
-		LOGGER.info("Started getting comments for tenant {}", tenantId);
+		log.info("Started getting comments for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<CommentResponse> commentResponses = commentService.getAllCommentsByPostId(postId,
@@ -95,14 +93,14 @@ public class CommentController {
 					commentResponses);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching comment {}", e.getMessage());
+			log.info("Error occurred while fetching comment {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching comment {}", e.getMessage());
+			log.info("Error occurred while fetching comment {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching comment and response {}", responseEntity);
+		log.info("End of fetching comment and response {}", responseEntity);
 		return responseEntity;
 	}
 

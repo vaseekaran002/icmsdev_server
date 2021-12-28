@@ -4,8 +4,6 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.exception.IcmsCustomException;
 import com.perksoft.icms.payload.request.EventRequest;
-import com.perksoft.icms.payload.response.APIResponse;
 import com.perksoft.icms.payload.response.BandEventResponse;
 import com.perksoft.icms.payload.response.EventResponse;
 import com.perksoft.icms.repository.EventRepository;
@@ -29,13 +26,13 @@ import com.perksoft.icms.util.CommonUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/{tenantid}/events")
 public class EventController {
-
-	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
 	
 	@Autowired
 	private CommonUtil commonUtil;
@@ -56,7 +53,7 @@ public class EventController {
 	@PostMapping("/update")
 	public ResponseEntity<String> updateEvent(@PathVariable("tenantid") String tenantId,
 			@RequestBody EventRequest eventRequest) throws ParseException {
-		LOGGER.info("Started Creating/Updating Event for tenant {}", tenantId);
+		log.info("Started Creating/Updating Event for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			eventRequest.setTenantId(UUID.fromString(tenantId));
@@ -65,20 +62,20 @@ public class EventController {
 					eventResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while Creating/Updating Event {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating Event {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while Creating/Updating Event {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating Event {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of Creating/Updating Event and response {}", responseEntity);
+		log.info("End of Creating/Updating Event and response {}", responseEntity);
 		return responseEntity;
 	}
 
 	@GetMapping("/list")
 	public ResponseEntity<String> getAllEvents(@PathVariable("tenantid") String tenantId) {
-		LOGGER.info("Started fetching Event for tenant {}", tenantId);
+		log.info("Started fetching Event for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<EventResponse> eventList = eventService.getAllEventsByTenantId(tenantId);
@@ -86,20 +83,20 @@ public class EventController {
 					eventList);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching Event {}", e.getMessage());
+			log.info("Error occurred while fetching Event {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching Event {}", e.getMessage());
+			log.info("Error occurred while fetching Event {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching Event and response {}", responseEntity);
+		log.info("End of fetching Event and response {}", responseEntity);
 		return responseEntity;
 	}
 
 	@GetMapping("/bands")
 	public ResponseEntity<String> getAllBandInTownEvents(@PathVariable("tenantid") String tenantId) {
-		LOGGER.info("Started fetching Band for tenant {}", tenantId);
+		log.info("Started fetching Band for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			BandEventResponse bandEventResponse = eventService.getBandEvents("", "");
@@ -107,20 +104,20 @@ public class EventController {
 					bandEventResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching Band {}", e.getMessage());
+			log.info("Error occurred while fetching Band {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching Band {}", e.getMessage());
+			log.info("Error occurred while fetching Band {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching Band and response {}", responseEntity);
+		log.info("End of fetching Band and response {}", responseEntity);
 		return responseEntity;
 	}
 
 	@GetMapping("/{eventId}")
 	public ResponseEntity<String> getEvevtById(@PathVariable("eventId") Long eventId) {
-		LOGGER.info("Started fetching  event {}", eventId);
+		log.info("Started fetching  event {}", eventId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			EventResponse event = eventService.getEventById(eventId);
@@ -128,14 +125,14 @@ public class EventController {
 					event);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching event {}", e.getMessage());
+			log.info("Error occurred while fetching event {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching event {}", e.getMessage());
+			log.info("Error occurred while fetching event {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching event and response {}", responseEntity);
+		log.info("End of fetching event and response {}", responseEntity);
 		return responseEntity;
 	}
 

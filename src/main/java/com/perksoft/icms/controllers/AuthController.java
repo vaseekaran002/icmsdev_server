@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,7 +33,6 @@ import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
-import com.perksoft.icms.payload.response.MessageResponse;
 import com.perksoft.icms.repository.RoleRepository;
 import com.perksoft.icms.repository.TenantRepository;
 import com.perksoft.icms.repository.UserRepository;
@@ -47,13 +44,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/auth/{tenantid}")
 @Api(value = "Authentication service")
 public class AuthController {
-	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
 	
 	@Autowired
 	private AuthenticationManager authenticationManager;
@@ -86,7 +84,7 @@ public class AuthController {
 	@PostMapping("/signin")
 	public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
 			@PathVariable("tenantid") String tenantId) {
-		LOGGER.info("Started authenticateUser for tenantId {}", tenantId);
+		log.info("Started authenticateUser for tenantId {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 
 		
@@ -120,14 +118,14 @@ public class AuthController {
 					jwtResponse);
 
 		} catch (IcmsCustomException e) {
-			LOGGER.info("Error occurred while authenticating user {}", e.getMessage());
+			log.info("Error occurred while authenticating user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while authenticating user {}", e.getMessage());
+			log.info("Error occurred while authenticating user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of authenticateUser and response {}", responseEntity);
+		log.info("End of authenticateUser and response {}", responseEntity);
 		return responseEntity;
 	}
 
@@ -142,16 +140,16 @@ public class AuthController {
 	public ResponseEntity<?> registerUser(@PathVariable("tenantid") String tenantId,
 			@Valid @RequestBody SignupRequest signUpRequest) {
 		
-		LOGGER.info("Started signing up user for tenantId {}", tenantId);
+		log.info("Started signing up user for tenantId {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			LOGGER.info("Error occurred while signing up user {}", "Username is already taken!");
+			log.info("Error occurred while signing up user {}", "Username is already taken!");
 			responseEntity = commonUtil.generateEntityResponse("Username is already taken!", Constants.FAILURE, Constants.FAILURE);
 		}
 		// need to add email validation method
 		if (userRepository.existsByUsername(signUpRequest.getEmail())) {
-			LOGGER.info("Error occurred while signing up user {}", "Email is already in use!");
+			log.info("Error occurred while signing up user {}", "Email is already in use!");
 			responseEntity = commonUtil.generateEntityResponse("Email is already in use!", Constants.FAILURE, Constants.FAILURE);
 		}
 
@@ -202,14 +200,14 @@ public class AuthController {
 					user);
 		}
 		catch (IcmsCustomException e) {
-			LOGGER.info("Error occurred while signing up user {}", e.getMessage());
+			log.info("Error occurred while signing up user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while signing up user {}", e.getMessage());
+			log.info("Error occurred while signing up user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of signing up user and response {}", responseEntity);
+		log.info("End of signing up user and response {}", responseEntity);
 		return responseEntity;
 	}
 }

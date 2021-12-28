@@ -6,10 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.EnumType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,12 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.exception.IcmsCustomException;
-import com.perksoft.icms.models.ERole;
 import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
 import com.perksoft.icms.models.Tenant;
@@ -38,14 +32,14 @@ import com.perksoft.icms.util.CommonUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 public class TenantController {
-	
-	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
-	
+		
 	@Autowired
 	private CommonUtil commonUtil;
 
@@ -70,21 +64,21 @@ public class TenantController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/tenant")
 	public ResponseEntity<String> findAllActiveTenants() {
-		LOGGER.info("Started fetching active tenants");
+		log.info("Started fetching active tenants");
 		ResponseEntity<String> responseEntity = null;
 		try {
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					tenantService.findAllActiveTenants("active"));	
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching active tenants {}", e.getMessage());
+			log.info("Error occurred while fetching active tenants {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching active tenants {}", e.getMessage());
+			log.info("Error occurred while fetching active tenants {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of  fetching active tenants and response {}", responseEntity);
+		log.info("End of  fetching active tenants and response {}", responseEntity);
 		return responseEntity;
 	}
 
@@ -97,7 +91,7 @@ public class TenantController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/tenant")
 	public ResponseEntity<String> addTenant(@RequestBody TenantRequest tenantRequest) throws Exception {
-		LOGGER.info("Started Creating/Updating tenants");
+		log.info("Started Creating/Updating tenants");
 		ResponseEntity<String> responseEntity = null;
 		try {
 			Optional<Tenant> optionalTenant = tenantService.findByTenantname(tenantRequest.getName());
@@ -106,18 +100,18 @@ public class TenantController {
 				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 						tenant);	
 			} else {
-				LOGGER.info("Error occurred while Creating/Updating tenant {}", "Tenant already exist");
+				log.info("Error occurred while Creating/Updating tenant {}", "Tenant already exist");
 				responseEntity = commonUtil.generateEntityResponse("Tenant already exist", Constants.FAILURE, Constants.FAILURE);
 			}
 		}catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of  Creating/Updating tenant and response {}", responseEntity);
+		log.info("End of  Creating/Updating tenant and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -130,7 +124,7 @@ public class TenantController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/tenant/update")
 	public ResponseEntity<String> updateTenant(@RequestBody TenantRequest tenantRequest) throws Exception {
-		LOGGER.info("Started Creating/Updating tenants");
+		log.info("Started Creating/Updating tenants");
 		ResponseEntity<String> responseEntity = null;
 		try {
 			Optional<Tenant> optionalTenant = tenantRepository.findById(tenantRequest.getId());
@@ -143,18 +137,18 @@ public class TenantController {
 						tenantRepository.save(optionalTenant.get()));	
 				
 			} else {
-				LOGGER.info("Error occurred while Creating/Updating tenant {}", "Tenant already exist");
+				log.info("Error occurred while Creating/Updating tenant {}", "Tenant already exist");
 				responseEntity = commonUtil.generateEntityResponse("Tenant already exist", Constants.FAILURE, Constants.FAILURE);
 			}
 		}catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of  Creating/Updating tenant and response {}", responseEntity);
+		log.info("End of  Creating/Updating tenant and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -168,7 +162,7 @@ public class TenantController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/tenant/{tenantid}/metadatamapping")
 	public ResponseEntity<String> metadataMapping(@RequestBody List<MetadataRequest> metadataRequests,@PathVariable("tenantid") UUID tenantId) {
-		LOGGER.info("Started mapping metadata for tenant {}",tenantId);
+		log.info("Started mapping metadata for tenant {}",tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			Optional<Tenant> optionalTenant = tenantRepository.findById(tenantId);
@@ -194,14 +188,14 @@ public class TenantController {
 					tenantRepository.save(optionalTenant.get()));	
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while mapping metadata for tenant {}", e.getMessage());
+			log.info("Error occurred while mapping metadata for tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while mapping metadata for tenant {}", e.getMessage());
+			log.info("Error occurred while mapping metadata for tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of  mapping metadata for tenant and response {}", responseEntity);
+		log.info("End of  mapping metadata for tenant and response {}", responseEntity);
 		return responseEntity;
 		
 	}
@@ -215,7 +209,7 @@ public class TenantController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("{tenantid}/metadata")
 	public ResponseEntity<String> getTenantMetadata(@PathVariable("tenantid") String tenantId) throws Exception {
-		LOGGER.info("Started fetching metadata for tenant {}",tenantId);
+		log.info("Started fetching metadata for tenant {}",tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			Optional<Tenant> optionalTenant = tenantRepository.findById(UUID.fromString(tenantId));
@@ -223,19 +217,19 @@ public class TenantController {
 				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 						optionalTenant.get().getMetaData());	
 			} else {
-				LOGGER.info("Error occurred while fetching metadata for tenant {}", "no metadata found");
+				log.info("Error occurred while fetching metadata for tenant {}", "no metadata found");
 				responseEntity = commonUtil.generateEntityResponse("no metadata found", Constants.FAILURE, Constants.FAILURE);
 			}
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching  metadata for tenant {}", e.getMessage());
+			log.info("Error occurred while fetching  metadata for tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching metadata for tenant {}", e.getMessage());
+			log.info("Error occurred while fetching metadata for tenant {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching metadata for tenant and response {}", responseEntity);
+		log.info("End of fetching metadata for tenant and response {}", responseEntity);
 		return responseEntity;
 	}
 }

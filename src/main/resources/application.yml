@@ -13,3 +13,8 @@ spring:
     # Hibernate ddl auto (create, create-drop, validate, update)
     hibernate:
       ddl-auto: update
+      
+      
+logging:
+  pattern:
+    console: '[%d{yyyy-MM-dd HH:mm:ss:SSS XXX}] [%-5level] [%thread] [%X{trace-id}] %logger{36} : %msg%n'
