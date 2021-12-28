@@ -1,1 +1,9 @@
-/target/
+**/.project
+**/.classpath
+**/.settings/
+**/.vscode/
+**/target/
+**/.factorypath
+*.bak
+**/*.log
+/.DS_Store

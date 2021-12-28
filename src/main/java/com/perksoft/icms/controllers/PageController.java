@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,13 +30,14 @@ import com.perksoft.icms.util.CommonUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/{tenantid}/pages")
 public class PageController {
-	
-	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
 	
 	@Autowired
 	private CommonUtil commonUtil;
@@ -59,7 +58,7 @@ public class PageController {
 	@PostMapping("/update")
 	public ResponseEntity<String> updatePage(@PathVariable("tenantid") String tenantId,
 			@RequestBody PageRequest pageRequest) {
-		LOGGER.info("Started Creating/Updating page for tenant {}", tenantId);
+		log.info("Started Creating/Updating page for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			pageRequest.setTenantId(UUID.fromString(tenantId));
@@ -68,14 +67,14 @@ public class PageController {
 					pageResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while Creating/Updating page {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating page {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while Creating/Updating page {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating page {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of Creating/Updating page and response {}", responseEntity);
+		log.info("End of Creating/Updating page and response {}", responseEntity);
 		return responseEntity;
 	}
 
@@ -88,7 +87,7 @@ public class PageController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/{pageId}")
 	public ResponseEntity<String> getPageById(@PathVariable("pageId") String pageId) {
-		LOGGER.info("Started fetching Page by Id  {}", pageId);
+		log.info("Started fetching Page by Id  {}", pageId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			PageResponse pageResponse = pageService.getPageById(pageId);
@@ -96,14 +95,14 @@ public class PageController {
 					pageResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching page by Id {}", e.getMessage());
+			log.info("Error occurred while fetching page by Id {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching page by Id {}", e.getMessage());
+			log.info("Error occurred while fetching page by Id {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching page by Id and response {}", responseEntity);
+		log.info("End of fetching page by Id and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -116,7 +115,7 @@ public class PageController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/list")
 	public ResponseEntity<String> getPagesByTenantId(@PathVariable("tenantid") String tenantId) {
-		LOGGER.info("Started fetching page for tenant {}", tenantId);
+		log.info("Started fetching page for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<PageResponse> pageResponses = pageService.getAllPageByTenantId(tenantId);
@@ -124,14 +123,14 @@ public class PageController {
 					pageResponses);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching page by tenant Id {}", e.getMessage());
+			log.info("Error occurred while fetching page by tenant Id {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching page by tenant Id {}", e.getMessage());
+			log.info("Error occurred while fetching page by tenant Id {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching page by Tenant id and response {}", responseEntity);
+		log.info("End of fetching page by Tenant id and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -144,7 +143,7 @@ public class PageController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/{userId}/list")
 	public ResponseEntity<String> getPagesByUserId(@PathVariable(name = "userId") String userId) {
-		LOGGER.info("Started fetching page by user Id {}", userId);
+		log.info("Started fetching page by user Id {}", userId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<PageResponse> pageResponses = pageService.getAllPageByUserId(userId);
@@ -152,14 +151,14 @@ public class PageController {
 					pageResponses);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching page  by user Id {}", e.getMessage());
+			log.info("Error occurred while fetching page  by user Id {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching page  by user Id {}", e.getMessage());
+			log.info("Error occurred while fetching page  by user Id {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching page by user Id and response {}", responseEntity);
+		log.info("End of fetching page by user Id and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -172,21 +171,21 @@ public class PageController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/{pageId}/followers/update")
 	public ResponseEntity<?> followRequest(@PathVariable("pageId") String pageId,@RequestBody PageFollowerRequest pageFollowerRequest) {
-		LOGGER.info("Started creating follow request for page {}", pageId);
+		log.info("Started creating follow request for page {}", pageId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					pageService.followerRequest(pageId, pageFollowerRequest));
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while creating follow request {}", e.getMessage());
+			log.info("Error occurred while creating follow request {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while creating follow request {}", e.getMessage());
+			log.info("Error occurred while creating follow request {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of creating follow request for page and response {}", responseEntity);
+		log.info("End of creating follow request for page and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -199,7 +198,7 @@ public class PageController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/{pageId}/followers")
 	public ResponseEntity<String> getTopFollwers(@PathVariable("pageId") String pageId) {
-		LOGGER.info("Started fetching top users for page {}", pageId);
+		log.info("Started fetching top users for page {}", pageId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<User> topUsers = new ArrayList<User>();
@@ -215,14 +214,14 @@ public class PageController {
 					topUsers);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching top users for page {}", e.getMessage());
+			log.info("Error occurred while fetching top users for page {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching top users for page {}", e.getMessage());
+			log.info("Error occurred while fetching top users for page {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of creating ffetching top users for page and response {}", responseEntity);
+		log.info("End of creating ffetching top users for page and response {}", responseEntity);
 		return responseEntity;
 	}
 	

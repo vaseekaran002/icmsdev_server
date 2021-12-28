@@ -2,13 +2,10 @@ package com.perksoft.icms.controllers;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,7 +23,6 @@ import com.perksoft.icms.models.Group;
 import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.GroupRequest;
 import com.perksoft.icms.payload.response.GroupResponse;
-import com.perksoft.icms.payload.response.MessageResponse;
 import com.perksoft.icms.payload.response.UserResponse;
 import com.perksoft.icms.repository.GroupRepository;
 import com.perksoft.icms.repository.UserRepository;
@@ -37,13 +33,13 @@ import com.perksoft.icms.util.CommonUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/{tenantid}/group")
 public class GroupController {
-	
-	private static final Logger LOGGER=LoggerFactory.getLogger(AuthController.class);
 	
 	@Autowired
 	private CommonUtil commonUtil;
@@ -71,7 +67,7 @@ public class GroupController {
 	@PostMapping("/update")
 	public ResponseEntity<String> createGroup(@PathVariable("tenantid") String tenantId,
 			@Valid @RequestBody GroupRequest groupRequest) {
-		LOGGER.info("Started Creating/Updating Group for tenant {}", tenantId);
+		log.info("Started Creating/Updating Group for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			groupRequest.setTenantid(UUID.fromString(tenantId));
@@ -80,14 +76,14 @@ public class GroupController {
 					groupResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while Creating/Updating Group {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while Creating/Updating Group {}", e.getMessage());
+			log.info("Error occurred while Creating/Updating Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of Creating/Updating Group and response {}", responseEntity);
+		log.info("End of Creating/Updating Group and response {}", responseEntity);
 		return responseEntity;
 	}
 
@@ -100,7 +96,7 @@ public class GroupController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/list")
 	public ResponseEntity<String> getAllGroups(@PathVariable("tenantid") String tenantId) {
-		LOGGER.info("Started fetching Group for tenant {}", tenantId);
+		log.info("Started fetching Group for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<GroupResponse> groupResponse = groupService.fetchGroupsByTenantId(tenantId);
@@ -108,14 +104,14 @@ public class GroupController {
 					groupResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching Group {}", e.getMessage());
+			log.info("Error occurred while fetching Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching Group {}", e.getMessage());
+			log.info("Error occurred while fetching Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching Group and response {}", responseEntity);
+		log.info("End of fetching Group and response {}", responseEntity);
 		return responseEntity;
 	}
 
@@ -133,7 +129,7 @@ public class GroupController {
 	@PostMapping("/member/update")
 	public ResponseEntity<String> addMembers(@PathVariable("tenantid") String tenantId,
 			@RequestBody Group group, @RequestParam("userlist") List<String> userlist) {
-		LOGGER.info("Started adding members to Group for tenant {}", tenantId);
+		log.info("Started adding members to Group for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			Optional<Group> existingGroup = groupRepository.findById(group.getId());
@@ -144,7 +140,7 @@ public class GroupController {
 					existingGroup.get().getUsers().add(existingUser.get());
 				}
 				else {
-					LOGGER.info("Error occurred while  adding members to Group {}", "Member already exist!!");
+					log.info("Error occurred while  adding members to Group {}", "Member already exist!!");
 					responseEntity = commonUtil.generateEntityResponse("Member already exist!!", Constants.FAILURE, Constants.FAILURE);
 				}
 			}
@@ -152,14 +148,14 @@ public class GroupController {
 					groupRepository.save(existingGroup.get()));
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while adding members to Group {}", e.getMessage());
+			log.info("Error occurred while adding members to Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while adding members to Group {}", e.getMessage());
+			log.info("Error occurred while adding members to Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of adding members to Group and response {}", responseEntity);
+		log.info("End of adding members to Group and response {}", responseEntity);
 		return responseEntity;
 	}
 
@@ -172,7 +168,7 @@ public class GroupController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/{groupid}/member/list")
 	public ResponseEntity<String> getAllGroupUsers(@PathVariable("groupid") Long groupId) {
-		LOGGER.info("Started fetching group members for Group {}", groupId);
+		log.info("Started fetching group members for Group {}", groupId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			GroupResponse groupResponse = groupService.fetchGroupById(groupId);
@@ -180,14 +176,14 @@ public class GroupController {
 					groupResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching group members {}", e.getMessage());
+			log.info("Error occurred while fetching group members {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching group members {}", e.getMessage());
+			log.info("Error occurred while fetching group members {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching group members and response {}", responseEntity);
+		log.info("End of fetching group members and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -200,7 +196,7 @@ public class GroupController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/{groupid}")
 	public ResponseEntity<String> getGroupById(@PathVariable("groupid") Long groupId){
-		LOGGER.info("Started fetching  Group {}", groupId);
+		log.info("Started fetching  Group {}", groupId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			GroupResponse groupResponse = groupService.fetchGroupById(groupId);
@@ -208,14 +204,14 @@ public class GroupController {
 					groupResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching group  {}", e.getMessage());
+			log.info("Error occurred while fetching group  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching group  {}", e.getMessage());
+			log.info("Error occurred while fetching group  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching group  and response {}", responseEntity);
+		log.info("End of fetching group  and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -229,7 +225,7 @@ public class GroupController {
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("{userId}/list")
 	public ResponseEntity<String> getGroupsByCreatedBy(@PathVariable("userId") String createdBy){
-		LOGGER.info("Started fetching  Groups created by User {}", createdBy);
+		log.info("Started fetching  Groups created by User {}", createdBy);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			List<GroupResponse> groupResponse = groupService.fetchGroupByCreatedBy(createdBy);
@@ -237,14 +233,14 @@ public class GroupController {
 					groupResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching  Groups created by User  {}", e.getMessage());
+			log.info("Error occurred while fetching  Groups created by User  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching  Groups created by User  {}", e.getMessage());
+			log.info("Error occurred while fetching  Groups created by User  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching fetching  Groups created by User  and response {}", responseEntity);
+		log.info("End of fetching fetching  Groups created by User  and response {}", responseEntity);
 		return responseEntity;
 	}
 	
@@ -258,7 +254,7 @@ public class GroupController {
 	@GetMapping("/{userid}/added")
 	public ResponseEntity<String> getUserGroupsByMembers(@PathVariable("tenantid") String tenantId,
 			@PathVariable("userid") String userId) {
-		LOGGER.info("Started fetching  Groups for User {}", userId);
+		log.info("Started fetching  Groups for User {}", userId);
 		ResponseEntity<String> responseEntity = null;
 		try {
 			UserResponse userResponse = userService.getUserById(UUID.fromString(userId), UUID.fromString(tenantId));
@@ -266,14 +262,14 @@ public class GroupController {
 					userResponse);
 		}
 		catch(IcmsCustomException e) {
-			LOGGER.info("Error occurred while fetching  Groups for User  {}", e.getMessage());
+			log.info("Error occurred while fetching  Groups for User  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
-			LOGGER.info("Error occurred while fetching  Groups for User  {}", e.getMessage());
+			log.info("Error occurred while fetching  Groups for User  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
 					Constants.EXCEPTION);
 		}
-		LOGGER.info("End of fetching fetching  Groups for User  and response {}", responseEntity);
+		log.info("End of fetching fetching  Groups for User  and response {}", responseEntity);
 		return responseEntity;
 	}
 	
