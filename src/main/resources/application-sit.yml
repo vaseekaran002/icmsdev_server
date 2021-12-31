@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://18.205.56.216:5432/icms
+    username: postgres
+    password: postgres
+
+#Application config
+bezkoder:
+  app:
+    jwtSecret: bezKoderSecretKey
+    jwtExpirationMs: 86400000
