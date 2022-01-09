@@ -1,19 +1,17 @@
 package com.perksoft.icms.models;
 
-
-
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-
-
 @Entity
-@Table(name = "roles")
+@Table(name = "role")
 public class Role {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
@@ -22,16 +20,14 @@ public class Role {
 	@Column(length = 20)
 	private ERole name;
 
-    private String roleDescription;
-    
-    @JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY  , mappedBy = "roles")
-	private Set<Tenant> tenants = new HashSet<>();
-    
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY,mappedBy = "roles")
-    private Set<MetaData> metadata = new HashSet<>();
-	
+	private String roleDescription;
+
+	private UUID tenantId;
+
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "role")
+	private Set<MetaData> metadata = new HashSet<>();
+
 	public Role() {
 
 	}
@@ -64,12 +60,20 @@ public class Role {
 		this.roleDescription = roleDescription;
 	}
 
-	public Set<Tenant> getTenants() {
-		return tenants;
+	public UUID getTenantId() {
+		return tenantId;
 	}
 
-	public void setTenants(Set<Tenant> tenants) {
-		this.tenants = tenants;
+	public void setTenantId(UUID tenantId) {
+		this.tenantId = tenantId;
 	}
-	
+
+	public Set<MetaData> getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(Set<MetaData> metadata) {
+		this.metadata = metadata;
+	}
+
 }

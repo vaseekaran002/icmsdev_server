@@ -17,7 +17,6 @@ import com.perksoft.icms.exception.IcmsCustomException;
 import com.perksoft.icms.models.Story;
 import com.perksoft.icms.payload.request.StoryRequest;
 import com.perksoft.icms.payload.response.StoryResponse;
-import com.perksoft.icms.repository.StoryRepository;
 import com.perksoft.icms.service.StoryService;
 import com.perksoft.icms.util.CommonUtil;
 
@@ -35,9 +34,6 @@ public class StoryController {
 	@Autowired
 	private CommonUtil commonUtil;
 
-	@Autowired
-	public StoryRepository storyRepository;
-	
 	@Autowired
 	public StoryService storyService;
 	

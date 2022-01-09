@@ -20,36 +20,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "metadata")
 public class MetaData {
-		
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY) 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@NotBlank
 	@Size(max = 50)
 	private String componentName;
-	
-	
+
 	private Integer componentOrder;
-	
+
 	private String displayName;
-	
+
 	@NotBlank
 	@Size(max = 20)
 	private String status;
-	
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY  , mappedBy = "metaData")
-	private Set<Tenant> tenants = new HashSet<>();
-	
+
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "metadataRoles" , joinColumns = @JoinColumn(name = "metadataId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
+	@JoinTable(name = "metadataRoles", joinColumns = @JoinColumn(name = "metadataId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
 	private Set<Role> roles = new HashSet<>();
-
-	private String role;
-	
 
 	public Long getId() {
 		return id;
@@ -83,14 +74,6 @@ public class MetaData {
 		this.componentOrder = componentOrder;
 	}
 
-	public Set<Tenant> getTenants() {
-		return tenants;
-	}
-
-	public void setTenants(Set<Tenant> tenants) {
-		this.tenants = tenants;
-	}
-
 	public String getStatus() {
 		return status;
 	}
@@ -105,14 +88,6 @@ public class MetaData {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
-	}
-
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
 	}
 
 }

@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -14,17 +13,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sun.istack.NotNull;
 
 @Entity
-@Table(name = "groups")
+@Table(name = "group")
 public class Group {
      
 	 @Id
@@ -53,13 +51,9 @@ public class Group {
 	 @JsonIgnore
 	 @ManyToMany(fetch = FetchType.LAZY)
 	 @JoinTable(name = "group_members",joinColumns = @JoinColumn(name = "group_id"),inverseJoinColumns = @JoinColumn(name = "user_id"))
-	 private Set<User> users = new HashSet<User>();
+	 private Set<User> users = new HashSet<>();
 	 
 	 
-	 public Group() {
-		 
-	 }
-
 	public Long getId() {
 		return id;
 	}

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.models.Group;
 import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.GroupRequest;
@@ -107,9 +108,13 @@ public class GroupService {
 	}
 
 	public void deleteGroup(Long id) {
-		Optional<Group> tempGroup = groupRepository.findById(id);
-		tempGroup.get().setStatus("inactive");
-		groupRepository.save(tempGroup.get());
+		Optional<Group> optionalGroup = groupRepository.findById(id);
+		
+		if(optionalGroup.isPresent()) {
+			Group group = optionalGroup.get();
+			group.setStatus(Constants.STATUS_INACTIVE);
+			groupRepository.save(group);
+		}
 	}
 
 }

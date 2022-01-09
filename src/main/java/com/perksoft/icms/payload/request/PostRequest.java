@@ -6,8 +6,6 @@ import javax.persistence.Lob;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import com.perksoft.icms.models.User;
-
 public class PostRequest {
 
 	private Long postId;
