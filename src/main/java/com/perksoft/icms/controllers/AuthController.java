@@ -12,8 +12,10 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -52,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/auth/{tenantid}")
 @Api(value = "Authentication service")
 public class AuthController {
-	
+
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
@@ -84,10 +86,9 @@ public class AuthController {
 	@PostMapping("/signin")
 	public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
 			@PathVariable("tenantid") String tenantId) {
-		log.info("Started authenticateUser for tenantId {}", tenantId);
+		log.info("Started authenticateUser for tenantId {} and username is {}", tenantId, loginRequest.getUsername());
 		ResponseEntity<String> responseEntity = null;
 
-		
 		try {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -96,7 +97,7 @@ public class AuthController {
 			String jwt = jwtUtils.generateJwtToken(authentication);
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-			List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
+			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
 					.collect(Collectors.toList());
 			Optional<Tenant> existingTenant = tenantRepository.findById(UUID.fromString(tenantId));
 			Set<MetaData> finalmetadata = new HashSet<>();
@@ -120,6 +121,9 @@ public class AuthController {
 		} catch (IcmsCustomException e) {
 			log.info("Error occurred while authenticating user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (BadCredentialsException e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
 			log.info("Error occurred while authenticating user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
@@ -139,18 +143,20 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@PathVariable("tenantid") String tenantId,
 			@Valid @RequestBody SignupRequest signUpRequest) {
-		
+
 		log.info("Started signing up user for tenantId {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
-		
+
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			log.info("Error occurred while signing up user {}", "Username is already taken!");
-			responseEntity = commonUtil.generateEntityResponse("Username is already taken!", Constants.FAILURE, Constants.FAILURE);
+			responseEntity = commonUtil.generateEntityResponse("Username is already taken!", Constants.FAILURE,
+					Constants.FAILURE);
 		}
 		// need to add email validation method
 		if (userRepository.existsByUsername(signUpRequest.getEmail())) {
 			log.info("Error occurred while signing up user {}", "Email is already in use!");
-			responseEntity = commonUtil.generateEntityResponse("Email is already in use!", Constants.FAILURE, Constants.FAILURE);
+			responseEntity = commonUtil.generateEntityResponse("Email is already in use!", Constants.FAILURE,
+					Constants.FAILURE);
 		}
 
 		try {
@@ -196,10 +202,8 @@ public class AuthController {
 			user.setRoles(roles);
 			user.setTenantId(UUID.fromString(tenantId));
 			userRepository.save(user);
-			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
-					user);
-		}
-		catch (IcmsCustomException e) {
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while signing up user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {

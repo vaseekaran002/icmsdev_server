@@ -18,6 +18,8 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.Data;
+
 @Entity
 @Table(name = "tenants")
 public class Tenant {
@@ -44,7 +46,7 @@ public class Tenant {
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "tenantRoles" , joinColumns = @JoinColumn(name = "tenantId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
-	private Set<Role> roles = new HashSet<Role>();
+	private Set<Role> roles = new HashSet<>();
 	
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.EAGER)

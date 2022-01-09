@@ -46,7 +46,7 @@ public class MetaData {
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "metadataRoles" , joinColumns = @JoinColumn(name = "metadataId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
-	private Set<Role> roles = new HashSet<Role>();
+	private Set<Role> roles = new HashSet<>();
 
 	private String role;
 	
@@ -66,8 +66,6 @@ public class MetaData {
 	public void setComponentName(String componentName) {
 		this.componentName = componentName;
 	}
-
-	
 
 	public Set<Role> getRoles() {
 		return roles;
@@ -117,9 +115,4 @@ public class MetaData {
 		this.role = role;
 	}
 
-	
-	
-	
-	
-	
 }

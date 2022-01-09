@@ -8,36 +8,48 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.perksoft.icms.contants.Constants;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class CommonUtil {
 
 	@Autowired
-	private Gson gson;
+	private ObjectMapper objectMapper;
 
 	public ResponseEntity<String> generateEntityResponse(String message, String status, Object responseData) {
 		Map<String, Object> responseMap = new LinkedHashMap<>();
 		ResponseEntity<String> responseEntity = null;
 
-		if (Constants.SUCCESS.equalsIgnoreCase(status)) {
+		try {
+			if (Constants.SUCCESS.equalsIgnoreCase(status)) {
 
-			responseMap.put("status", Constants.SUCCESS);
-			responseMap.put("message", message);
-			responseMap.put("data", responseData);
-			responseEntity = new ResponseEntity<>(gson.toJson(responseMap), HttpStatus.OK);
-		} else {
-
-			responseMap.put("status", Constants.FAILURE);
-			responseMap.put("message", message);
-
-			if (Constants.EXCEPTION.equalsIgnoreCase(status)) {
-				responseEntity = new ResponseEntity<>(gson.toJson(responseMap), HttpStatus.INTERNAL_SERVER_ERROR);
+				responseMap.put("status", Constants.SUCCESS);
+				responseMap.put("message", message);
+				responseMap.put("data", responseData);
+				String json = objectMapper.writeValueAsString(responseData);
+				responseEntity = new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
-				responseEntity = new ResponseEntity<>(gson.toJson(responseMap), HttpStatus.CONFLICT);
+
+				responseMap.put("status", Constants.FAILURE);
+				responseMap.put("message", message);
+
+				if (Constants.EXCEPTION.equalsIgnoreCase(status)) {
+					responseEntity = new ResponseEntity<>(objectMapper.writeValueAsString(responseMap),
+							HttpStatus.INTERNAL_SERVER_ERROR);
+				} else {
+					responseEntity = new ResponseEntity<>(objectMapper.writeValueAsString(responseMap),
+							HttpStatus.CONFLICT);
+				}
 			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		log.info("End of API resonse {}", responseEntity);
 		return responseEntity;
 	}
 

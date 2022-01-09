@@ -30,7 +30,7 @@ public class Role {
     
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY,mappedBy = "roles")
-    private Set<MetaData> metadata = new HashSet<MetaData>();
+    private Set<MetaData> metadata = new HashSet<>();
 	
 	public Role() {
 
@@ -71,8 +71,5 @@ public class Role {
 	public void setTenants(Set<Tenant> tenants) {
 		this.tenants = tenants;
 	}
-
-	
-	
 	
 }

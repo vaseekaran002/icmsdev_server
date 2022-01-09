@@ -48,6 +48,7 @@ public class RestControllerAdvice {
 	private void addMDC() {
 		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 		String traceId = request.getHeader("trace-id");
+		
 		if(StringUtils.isBlank(traceId)) {
 			traceId = UUID.randomUUID().toString();
 		}
