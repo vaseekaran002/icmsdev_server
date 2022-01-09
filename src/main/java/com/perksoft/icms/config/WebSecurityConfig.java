@@ -23,8 +23,9 @@ import com.perksoft.icms.security.services.UserDetailsServiceImpl;
 @EnableGlobalMethodSecurity(
 		prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+	
 	@Autowired
-	UserDetailsServiceImpl userDetailsService;
+	private UserDetailsServiceImpl userDetailsService;
 
 	@Autowired
 	private AuthEntryPointJwt unauthorizedHandler;

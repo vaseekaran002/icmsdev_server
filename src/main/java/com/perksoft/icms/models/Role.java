@@ -25,7 +25,7 @@ public class Role {
 	private UUID tenantId;
 
 	@JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "role")
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
 	private Set<MetaData> metadata = new HashSet<>();
 
 	public Role() {
