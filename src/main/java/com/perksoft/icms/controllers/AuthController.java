@@ -2,7 +2,6 @@ package com.perksoft.icms.controllers;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,13 +29,11 @@ import com.perksoft.icms.exception.IcmsCustomException;
 import com.perksoft.icms.models.ERole;
 import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
-import com.perksoft.icms.models.Tenant;
 import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
 import com.perksoft.icms.repository.RoleRepository;
-import com.perksoft.icms.repository.TenantRepository;
 import com.perksoft.icms.repository.UserRepository;
 import com.perksoft.icms.security.jwt.JwtUtils;
 import com.perksoft.icms.security.services.UserDetailsImpl;
@@ -57,9 +54,6 @@ public class AuthController {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
-
-	@Autowired
-	private TenantRepository tenantRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -99,19 +93,7 @@ public class AuthController {
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
 					.collect(Collectors.toList());
-			Optional<Tenant> existingTenant = tenantRepository.findById(UUID.fromString(tenantId));
 			Set<MetaData> finalmetadata = new HashSet<>();
-
-			if (existingTenant.isPresent()) {
-				Set<MetaData> metadataSet = existingTenant.get().getMetaData();
-
-				for (MetaData metaData : metadataSet) {
-
-					if (roles.contains(metaData.getRole())) {
-						finalmetadata.add(metaData);
-					}
-				}
-			}
 
 			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
 					userDetails.getEmail(), roles, finalmetadata);

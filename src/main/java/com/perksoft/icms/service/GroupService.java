@@ -1,7 +1,5 @@
 package com.perksoft.icms.service;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +20,20 @@ public class GroupService {
 
 	@Autowired
 	private GroupRepository groupRepository;
-	
+
+	public Group saveGroup(Group group) {
+		return groupRepository.save(group);
+	}
+
+	public Group getGroupById(Long groupId) {
+		Optional<Group> existingGroup = groupRepository.findById(groupId);
+		Group group = null;
+
+		if (existingGroup.isPresent()) {
+			group = existingGroup.get();
+		}
+		return group;
+	}
 
 	public GroupResponse addGroup(GroupRequest groupRequest) {
 		Group group = new Group();
@@ -45,18 +56,18 @@ public class GroupService {
 		List<GroupResponse> groupResponse = convertToGroupResponse(groups);
 		return groupResponse;
 	}
-	
-	public List<GroupResponse> fetchGroupByCreatedBy(String createdBy){
+
+	public List<GroupResponse> fetchGroupByCreatedBy(String createdBy) {
 		List<Group> groups = groupRepository.findAllByCreatedBy(UUID.fromString(createdBy));
 		List<GroupResponse> groupResponse = convertToGroupResponse(groups);
 		return groupResponse;
 	}
 
 	public GroupResponse fetchGroupById(Long groupId) {
-		
+
 //		File file = new File("D:\\photos\\college photos\\sem 1\\IMG_20191129_132254.jpg");
 //		byte[] picInBytes = new byte[(int) file.length()];
-		Optional<Group> optionalGroup= groupRepository.findById(groupId);
+		Optional<Group> optionalGroup = groupRepository.findById(groupId);
 		Group group = optionalGroup.get();
 		GroupResponse groupResponse = new GroupResponse();
 		groupResponse.setId(group.getId());
@@ -64,26 +75,26 @@ public class GroupService {
 		groupResponse.setStatus(group.getStatus());
 		groupResponse.setDescription(group.getDescription());
 		groupResponse.setUsers(group.getUsers());
-        groupResponse.setGroupImage(group.getGroupImage());
-        groupResponse.setCreatedBy(group.getCreatedBy());
+		groupResponse.setGroupImage(group.getGroupImage());
+		groupResponse.setCreatedBy(group.getCreatedBy());
 		return groupResponse;
 	}
-	
-	public boolean isUserPresent(Group group,UUID userId) {
-		 Iterator<User> iter = group.getUsers().iterator();
-		 while (iter.hasNext()) {
-	            if(iter.next().getId() == userId) {
-	            	return true;
-	            }
-	            
-	        }
-		 return false;
+
+	public boolean isUserPresent(Group group, UUID userId) {
+		Iterator<User> iter = group.getUsers().iterator();
+
+		while (iter.hasNext()) {
+			if (iter.next().getId() == userId) {
+				return true;
+			}
+
+		}
+		return false;
 	}
 
 	public List<GroupResponse> convertToGroupResponse(List<Group> groups) {
-		List<GroupResponse> groupResponses = new ArrayList<>();
 
-		groupResponses = groups.stream().map(g -> {
+		return groups.stream().map(g -> {
 			GroupResponse groupResponse = new GroupResponse();
 			groupResponse.setId(g.getId());
 			groupResponse.setName(g.getName());
@@ -93,7 +104,6 @@ public class GroupService {
 			groupResponse.setGroupImage(g.getGroupImage());
 			return groupResponse;
 		}).collect(Collectors.toList());
-		return groupResponses;
 	}
 
 	public void deleteGroup(Long id) {

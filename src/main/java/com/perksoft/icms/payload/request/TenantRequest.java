@@ -1,13 +1,9 @@
 package com.perksoft.icms.payload.request;
 
-import java.util.Set;
 import java.util.UUID;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-
-import com.perksoft.icms.models.MetaData;
-import com.perksoft.icms.models.Role;
 
 public class TenantRequest {
 
@@ -27,20 +23,6 @@ public class TenantRequest {
 	private byte[] logo;
 
 	private byte[] favIcon;
-
-	private Set<MetaData> metadata;
-	
-	private Set<Role> roles;
-	
-	
-
-	public Set<Role> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
-	}
 
 	public UUID getId() {
 		return id;
@@ -89,13 +71,4 @@ public class TenantRequest {
 	public void setFavIcon(byte[] favIcon) {
 		this.favIcon = favIcon;
 	}
-
-	public Set<MetaData> getMetadata() {
-		return metadata;
-	}
-
-	public void setMetadata(Set<MetaData> metadata) {
-		this.metadata = metadata;
-	}
-
 }

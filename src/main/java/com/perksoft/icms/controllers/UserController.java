@@ -2,9 +2,7 @@ package com.perksoft.icms.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,15 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.exception.IcmsCustomException;
-import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Page;
-import com.perksoft.icms.models.Tenant;
 import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.PageResponse;
 import com.perksoft.icms.payload.response.UserResponse;
-import com.perksoft.icms.repository.TenantRepository;
-import com.perksoft.icms.repository.UserRepository;
 import com.perksoft.icms.service.UserService;
 import com.perksoft.icms.util.CommonUtil;
 
@@ -41,18 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/{tenantid}/user")
 public class UserController {
 
-
 	@Autowired
 	private CommonUtil commonUtil;
 
 	@Autowired
 	private UserService userService;
-
-	@Autowired
-	private TenantRepository tenantRepository;
-
-	@Autowired
-	private UserRepository userRepository;
 
 	@ApiOperation(value = "retrieves  user by user id", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves group list"),
@@ -66,8 +53,10 @@ public class UserController {
 			@PathVariable("userid") String userId) {
 		log.info("Started fetching user by user id for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
-			UserResponse userResponse = userService.getUserById(UUID.fromString(userId), UUID.fromString(tenantId));
+			User user = userService.getUserByIdAndTenantId(userId, tenantId);
+			UserResponse userResponse = userService.convertToUserResponse(user);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					userResponse);
 		} catch (IcmsCustomException e) {
@@ -90,23 +79,24 @@ public class UserController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/update/profile")
-	public ResponseEntity<String> updateProfile(@RequestBody SignupRequest signUpRequest,
+	public ResponseEntity<String> updateProfile(@RequestBody SignupRequest signupRequest,
 			@PathVariable("tenantid") String tenantId) {
 		log.info("Started updating user by user id for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
-			Optional<User> existingUser = userRepository.findByIdAndTenantId(signUpRequest.getId(),
-					UUID.fromString(tenantId));
-			if (existingUser.isPresent()) {
-				existingUser.get().setFirstName(signUpRequest.getFirstName());
-				existingUser.get().setLastName(signUpRequest.getLastName());
-				existingUser.get().setMobileNumber(signUpRequest.getMobileNumber());
-				existingUser.get().setProfileImage(signUpRequest.getProfileImage());
-				existingUser.get().setRoles(signUpRequest.getRoles());
-				User user = userRepository.save(existingUser.get());
+			User existingUser = userService.getUserByIdAndTenantId(signupRequest.getId(), tenantId);
+
+			if (existingUser != null) {
+				existingUser.setFirstName(signupRequest.getFirstName());
+				existingUser.setLastName(signupRequest.getLastName());
+				existingUser.setMobileNumber(signupRequest.getMobileNumber());
+				existingUser.setProfileImage(signupRequest.getProfileImage());
+				existingUser.setRoles(signupRequest.getRoles());
+				User user = userService.saveUser(existingUser);
 				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
 			} else {
-				log.info("Error occurred while updating user by user id {}", "Profile not Updated");
+				log.info("Error occurred while updating user by user id {}", "");
 				responseEntity = commonUtil.generateEntityResponse("Profile not Updated", Constants.FAILURE,
 						Constants.FAILURE);
 			}
@@ -135,12 +125,11 @@ public class UserController {
 		log.info("Started fetching metadata for user for tenant {} ", tenantId);
 		ResponseEntity<String> responseEntity = null;
 		try {
-			Optional<Tenant> existingTenant = tenantRepository.findById(UUID.fromString(tenantId));
-			Set<MetaData> metadata = existingTenant.get().getMetaData();
-			UserResponse userResponse = userService.getUserById(UUID.fromString(userId), UUID.fromString(tenantId));
-			userResponse.setMetadatas(metadata);
+			User user = userService.getUserByIdAndTenantId(userId, tenantId);
+			UserResponse userResponse = userService.convertToUserResponse(user);
+			userResponse.setMetaData(null);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
-					userResponse.getMetadatas());
+					userResponse.getMetaData());
 		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching metadata for user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
@@ -165,14 +154,13 @@ public class UserController {
 			@PathVariable("loggedinUserId") String userId) {
 		log.info("Started fetching all the users for tenant {} ", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
-			List<User> userList = userRepository.findAllByTenantId(UUID.fromString(tenantId));
-			Optional<User> loggedUser = userRepository.findById(UUID.fromString(userId));
-			for (User u : userList) {
-				if (u.getId() == loggedUser.get().getId()) {
-					userList.remove(u);
-					break;
-				}
+			List<User> userList = userService.getAllUsers(tenantId);
+			User user = userService.getUserByIdAndTenantId(userId, tenantId);
+
+			if (user != null) {
+				userList.remove(user);
 			}
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, userList);
 		} catch (IcmsCustomException e) {
@@ -199,8 +187,9 @@ public class UserController {
 			@PathVariable("userId") String userId) {
 		log.info("Started fetching all the users following pages for tenant {} ", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
-			User existingUser = userRepository.findById(UUID.fromString(userId)).get();
+			User existingUser = userService.getUserByIdAndTenantId(userId, tenantId);
 			Set<Page> followedPages = existingUser.getFollowingPages();
 			List<Page> pageList = new ArrayList<>(followedPages);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, pageList);
@@ -227,11 +216,12 @@ public class UserController {
 	public ResponseEntity<String> getFavouritePages(@PathVariable("userId") String userId) {
 		log.info("Started fetching favourite pages for user {} ", userId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
 			List<PageResponse> pageResponses = userService.getFavouritePages(userId);
-			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, pageResponses);
-		}
-		catch (IcmsCustomException e) {
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+					pageResponses);
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching favourite pages for user {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {

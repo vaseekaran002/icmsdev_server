@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username")})
+@Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username") })
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,43 +35,42 @@ public class User {
 
 	@Size(max = 20)
 	private String firstName;
-	
+
 	@Size(max = 20)
 	private String lastName;
-	
+
 	@Size(max = 10)
 	private String mobileNumber;
-	
+
 	private UUID tenantId;
 
 	private byte[] profileImage;
- 	
+
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
-	
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY  , mappedBy = "users")
-	private Set<Group> groups = new HashSet<Group>();
-	
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY , mappedBy = "followers")
-	private Set<Page> followingPages = new HashSet<Page>();
-	
-	
-	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL,mappedBy = "createdBy")
-	private List<Post> posts = new ArrayList<Post>();
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL,mappedBy = "createdBy")
-	private List<Page> pages = new ArrayList<Page>();
-	
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
+	private Set<Group> groups = new HashSet<>();
+
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL,mappedBy = "createdBy")
-	private List<Event> events = new ArrayList<Event>();
-	
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "followers")
+	private Set<Page> followingPages = new HashSet<>();
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+	private List<Post> posts = new ArrayList<>();
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+	private List<Page> ownPages = new ArrayList<>();
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+	private List<Event> events = new ArrayList<>();
+
 	public User() {
 	}
 
@@ -80,8 +79,6 @@ public class User {
 		this.email = email;
 		this.password = password;
 	}
-
-	
 
 	public UUID getId() {
 		return id;
@@ -187,12 +184,12 @@ public class User {
 		this.followingPages = followingPages;
 	}
 
-	public List<Page> getPages() {
-		return pages;
+	public List<Page> getOwnPages() {
+		return ownPages;
 	}
 
-	public void setPages(List<Page> pages) {
-		this.pages = pages;
+	public void setOwnPages(List<Page> pages) {
+		this.ownPages = pages;
 	}
 
 	public List<Event> getEvents() {
@@ -202,7 +199,5 @@ public class User {
 	public void setEvents(List<Event> events) {
 		this.events = events;
 	}
-   
-	
-	 
+
 }
