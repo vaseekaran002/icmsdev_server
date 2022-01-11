@@ -1,4 +1,4 @@
-package com.perksoft.icms.security.jwt;
+package com.perksoft.icms.config;
 
 import java.io.IOException;
 
@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.security.services.UserDetailsServiceImpl;
+import com.perksoft.icms.service.JwtTokenService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +38,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
 		try {
 			String jwt = parseJwt(request);
-
+			System.out.println("===========token-====="+jwt);
 			if (jwt != null && jwtTokenService.validateToken(jwt)) {
 				String username = jwtTokenService.getUsernameFromToken(jwt);
 
@@ -57,11 +58,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
 	private String parseJwt(HttpServletRequest request) {
 		String headerAuth = request.getHeader(Constants.AUTHORIZATION);
-
+		System.out.println("=header auth=="+headerAuth);
+		String jwt = null;
+		
 		if (StringUtils.hasText(headerAuth) && headerAuth.startsWith(Constants.BEARER)) {
-			return headerAuth.substring(7, headerAuth.length());
+			jwt = headerAuth.substring(7, headerAuth.length());
 		}
 
-		return null;
+		return jwt;
 	}
 }

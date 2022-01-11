@@ -1,4 +1,4 @@
-package com.perksoft.icms.security.jwt;
+package com.perksoft.icms.service;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -7,12 +7,15 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.perksoft.icms.contants.Constants;
+import com.perksoft.icms.models.JwtBlacklist;
+import com.perksoft.icms.repository.JwtTokenRepository;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 
 import io.jsonwebtoken.Claims;
@@ -21,13 +24,17 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Service
 public class JwtTokenService {
+
 	@Value("${icms.app.jwtSecret}")
 	private String jwtSecret;
 
 	@Value("${icms.app.jwtExpirationMs}")
 	private int jwtExpirationMs;
+
+	@Autowired
+	private JwtTokenRepository jwtTokenRepository;
 
 	public String generateToken(Authentication authentication) {
 		final Map<String, Object> claims = new HashMap<>();
@@ -73,14 +80,18 @@ public class JwtTokenService {
 	private String generateToken(Map<String, Object> claims, String subject) {
 		final long now = System.currentTimeMillis();
 		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(now))
-				.setExpiration(new Date(now + jwtExpirationMs))
-				.signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+				.setExpiration(new Date(now + jwtExpirationMs)).signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
 	}
 
-	//validate token
-    public Boolean validateToken(String token) {
-        final String username = getUsernameFromToken(token);
-        log.info("username from token===="+username);
-        return username != null && !isTokenExpired(token);
-    }
+	// validate token
+	public Boolean validateToken(String token) {
+		final String username = getUsernameFromToken(token);
+		log.info("username from token===={}", username);
+		final JwtBlacklist JwtBlacklist = jwtTokenRepository.findByToken(token);
+		return username != null && !isTokenExpired(token) && JwtBlacklist == null;
+	}
+
+	public JwtBlacklist saveJwtBlacklist(JwtBlacklist jwtBlacklist) {
+		return jwtTokenRepository.save(jwtBlacklist);
+	}
 }

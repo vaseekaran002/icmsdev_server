@@ -14,8 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.perksoft.icms.security.jwt.AuthEntryPointJwt;
-import com.perksoft.icms.security.jwt.AuthTokenFilter;
 import com.perksoft.icms.security.services.UserDetailsServiceImpl;
 
 @Configuration
