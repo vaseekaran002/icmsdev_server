@@ -22,33 +22,33 @@ public class OwnerService {
 
 	@Autowired
 	private OwnerRepository ownerRepository;
-	
+
 	@Autowired
 	private PageRepository pageRepository;
-	
-	public Owner updateOwners(OwnerRequest ownerRequest,UUID pageId){
+
+	public Owner updateOwners(OwnerRequest ownerRequest, UUID pageId) {
 		Optional<Page> existingPage = pageRepository.findById(pageId);
-		if(existingPage.isEmpty()) {
+
+		if (!existingPage.isPresent()) {
+			Owner owner = new Owner();
+			owner.setId(ownerRequest.getOwnerId());
+			owner.setAddedBy(ownerRequest.getAddedBy());
+			owner.setPageId(existingPage.get().getId());
+			owner.setUserId(ownerRequest.getUserId());
+			owner.setStatus(ownerRequest.getStatus());
+			return ownerRepository.save(owner);
+		} else {
 			throw new IcmsCustomException("Page not Found");
 		}
-		Owner owner = new Owner();
-		owner.setId(ownerRequest.getOwnerId());
-		owner.setAddedBy(ownerRequest.getAddedBy());
-		owner.setPageId(existingPage.get().getId());
-		owner.setUserId(ownerRequest.getUserId());
-		owner.setStatus(ownerRequest.getStatus());
-		return ownerRepository.save(owner);
+
 	}
-	
-	
-	public List<OwnerResponse> getOwnersByPageId(String pageId){
-		List<Owner> owners =  ownerRepository.findAllByPageId(UUID.fromString(pageId));
+
+	public List<OwnerResponse> getOwnersByPageId(String pageId) {
+		List<Owner> owners = ownerRepository.findAllByPageId(UUID.fromString(pageId));
 		return convertToOwnerResponse(owners);
 	}
-	
-	
-	
-	public List<OwnerResponse> convertToOwnerResponse(List<Owner> owners){
+
+	public List<OwnerResponse> convertToOwnerResponse(List<Owner> owners) {
 		List<OwnerResponse> ownerResponses = new ArrayList<OwnerResponse>();
 		ownerResponses = owners.stream().map(owner -> {
 			OwnerResponse ownerResponse = new OwnerResponse();
@@ -61,8 +61,5 @@ public class OwnerService {
 		}).collect(Collectors.toList());
 		return ownerResponses;
 	}
-	
-	
-	
-	
+
 }
