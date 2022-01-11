@@ -22,7 +22,7 @@ logging:
     name: '/apps/icms.log'
 
 #Application config
-bezkoder:
+icms:
   app:
-    jwtSecret: bezKoderSecretKey
+    jwtSecret: icmsSecretKey
     jwtExpirationMs: 18000000

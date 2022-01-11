@@ -23,10 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class JwtTokenService {
-	@Value("${bezkoder.app.jwtSecret}")
+	@Value("${icms.app.jwtSecret}")
 	private String jwtSecret;
 
-	@Value("${bezkoder.app.jwtExpirationMs}")
+	@Value("${icms.app.jwtExpirationMs}")
 	private int jwtExpirationMs;
 
 	public String generateToken(Authentication authentication) {
