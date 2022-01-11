@@ -1,6 +1,7 @@
 package com.perksoft.icms.config;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -36,35 +37,37 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		try {
-			String jwt = parseJwt(request);
-			System.out.println("===========token-====="+jwt);
-			if (jwt != null && jwtTokenService.validateToken(jwt)) {
-				String username = jwtTokenService.getUsernameFromToken(jwt);
+		final Optional<String> jwt = parseJwtFromRequest(request);
 
-				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+		jwt.ifPresent(token -> {
 
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+			try {
+
+				if (jwtTokenService.validateToken(token)) {
+					String username = jwtTokenService.getUsernameFromToken(token);
+
+					UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+					authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
+			} catch (Exception e) {
+				log.error("Cannot set user authentication: {}", e);
 			}
-		} catch (Exception e) {
-			log.error("Cannot set user authentication: {}", e);
-		}
+		});
 
 		filterChain.doFilter(request, response);
 	}
 
-	private String parseJwt(HttpServletRequest request) {
+	private Optional<String> parseJwtFromRequest(HttpServletRequest request) {
 		String headerAuth = request.getHeader(Constants.AUTHORIZATION);
-		System.out.println("=header auth=="+headerAuth);
-		String jwt = null;
-		
+
 		if (StringUtils.hasText(headerAuth) && headerAuth.startsWith(Constants.BEARER)) {
-			jwt = headerAuth.substring(7, headerAuth.length());
+			return Optional.of(jwtTokenService.decryptToken(headerAuth.substring(7)));
 		}
 
-		return jwt;
+		return Optional.empty();
 	}
 }

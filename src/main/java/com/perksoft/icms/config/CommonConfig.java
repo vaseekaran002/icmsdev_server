@@ -1,5 +1,6 @@
 package com.perksoft.icms.config;
 
+import org.jasypt.util.text.AES256TextEncryptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -20,6 +21,13 @@ public class CommonConfig {
 		mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
 		mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		return mapper;
+	}
+
+	@Bean
+	public AES256TextEncryptor aes256BinaryEncryptor() {
+		final AES256TextEncryptor encryptor = new AES256TextEncryptor();
+		encryptor.setPassword("stakspay&icms");
+		return encryptor;
 	}
 
 }

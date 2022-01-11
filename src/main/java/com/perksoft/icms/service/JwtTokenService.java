@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jasypt.util.text.AES256TextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -35,6 +36,9 @@ public class JwtTokenService {
 
 	@Autowired
 	private JwtTokenRepository jwtTokenRepository;
+	
+	@Autowired
+	private AES256TextEncryptor aes256TextEncryptor;
 
 	public String generateToken(Authentication authentication) {
 		final Map<String, Object> claims = new HashMap<>();
@@ -44,7 +48,9 @@ public class JwtTokenService {
 				.collect(Collectors.toList());
 
 		claims.put(Constants.ROLES, roles);
-		return generateToken(claims, userPrincipal.getUsername());
+		String token = generateToken(claims, userPrincipal.getUsername());
+		String encryptedToken = aes256TextEncryptor.encrypt(token);
+		return encryptedToken;
 	}
 
 	// retrieve username from jwt token
@@ -86,12 +92,15 @@ public class JwtTokenService {
 	// validate token
 	public Boolean validateToken(String token) {
 		final String username = getUsernameFromToken(token);
-		log.info("username from token===={}", username);
-		final JwtBlacklist JwtBlacklist = jwtTokenRepository.findByToken(token);
-		return username != null && !isTokenExpired(token) && JwtBlacklist == null;
+		final JwtBlacklist jwtBlacklist = jwtTokenRepository.findByToken(token);
+		return username != null && !isTokenExpired(token) && jwtBlacklist == null;
 	}
 
 	public JwtBlacklist saveJwtBlacklist(JwtBlacklist jwtBlacklist) {
 		return jwtTokenRepository.save(jwtBlacklist);
+	}
+	
+	public String decryptToken(String encryptedToken) {
+		return aes256TextEncryptor.decrypt(encryptedToken);
 	}
 }
