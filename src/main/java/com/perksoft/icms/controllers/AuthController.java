@@ -35,7 +35,7 @@ import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
 import com.perksoft.icms.repository.RoleRepository;
 import com.perksoft.icms.repository.UserRepository;
-import com.perksoft.icms.security.jwt.JwtUtils;
+import com.perksoft.icms.security.jwt.JwtTokenService;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 import com.perksoft.icms.util.CommonUtil;
 
@@ -65,7 +65,7 @@ public class AuthController {
 	private PasswordEncoder encoder;
 
 	@Autowired
-	private JwtUtils jwtUtils;
+	private JwtTokenService jwtTokenService;
 
 	@Autowired
 	private CommonUtil commonUtil;
@@ -88,7 +88,7 @@ public class AuthController {
 					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
-			String jwt = jwtUtils.generateJwtToken(authentication);
+			String jwt = jwtTokenService.generateToken(authentication);
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)

@@ -9,4 +9,11 @@ public class Constants {
 	
 	public static final String STATUS_ACTIVE = "ACTIVE";
 	public static final String STATUS_INACTIVE = "INACTIVE";
+	
+	public static final String AUTHORIZATION = "Authorization";
+    public static final String BEARER = "Bearer ";
+    
+    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+
+    public static final String ROLES = "ROLES";
 }

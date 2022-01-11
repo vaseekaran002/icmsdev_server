@@ -19,4 +19,10 @@ logging:
   pattern:
     console: '[%d{yyyy-MM-dd HH:mm:ss:SSS XXX}] [%-5level] [%thread] [%X{trace-id}] %logger{36} : %msg%n'
   file:
-    name: '/apps/icms.log' 
+    name: '/apps/icms.log'
+
+#Application config
+bezkoder:
+  app:
+    jwtSecret: bezKoderSecretKey
+    jwtExpirationMs: 18000000
