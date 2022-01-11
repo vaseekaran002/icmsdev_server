@@ -1,9 +1,9 @@
 package com.perksoft.icms.service;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -61,20 +61,20 @@ public class PageService {
 	}
 
 	public List<PageResponse> getAllPageByTenantId(String tenantId) {
-		List<Page> pages = pageRepository.findAllByTenantId(UUID.fromString(tenantId));
+		Set<Page> pages = (Set<Page>) pageRepository.findAllByTenantId(UUID.fromString(tenantId));
 		List<PageResponse> pageResponses = converToResponse(pages);
 		return pageResponses;
 	}
 
 	public List<PageResponse> getAllPageByUserId(String userId) {
 		Optional<User> existingUser = userRepository.findById(UUID.fromString(userId));
-		List<Page> pages = pageRepository.findAllByCreatedBy(existingUser.get());
+		Set<Page> pages = (Set<Page>) pageRepository.findAllByCreatedBy(existingUser.get());
 		List<PageResponse> pageResponses = converToResponse(pages);
 		return pageResponses;
 	}
 
-	public ResponseEntity<?> followerRequest(String pageId,PageFollowerRequest pageFollowerRequest) {
-		if (isFollowed(pageId,pageFollowerRequest.getCurrentFollowerId())) {
+	public ResponseEntity<?> followerRequest(String pageId, PageFollowerRequest pageFollowerRequest) {
+		if (isFollowed(pageId, pageFollowerRequest.getCurrentFollowerId())) {
 			return ResponseEntity.ok(new MessageResponse("you already are a follower of this page "));
 		} else {
 			Optional<Page> existingPage = pageRepository.findById(UUID.fromString(pageId));
@@ -98,9 +98,9 @@ public class PageService {
 		return false;
 	}
 
-	public List<PageResponse> converToResponse(List<Page> pages) {
-		List<PageResponse> pageResponses = new ArrayList<>();
-		pageResponses = pages.stream().map(p -> {
+	public List<PageResponse> converToResponse(Set<Page> pages) {
+
+		return pages.stream().map(p -> {
 			PageResponse pageResponse = new PageResponse();
 			pageResponse.setId(p.getId());
 			pageResponse.setName(p.getName());
@@ -113,7 +113,6 @@ public class PageService {
 			pageResponse.setFollowersCount(Long.valueOf(p.getFollowers().size()));
 			return pageResponse;
 		}).collect(Collectors.toList());
-		return pageResponses;
 	}
 
 }

@@ -1,37 +1,44 @@
 package com.perksoft.icms.models;
 
-
-
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 
 @Entity
 @Table(name = "roles")
 public class Role {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = 20)
 	private ERole name;
 
-    private String roleDescription;
-    
-    @JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY  , mappedBy = "roles")
-	private Set<Tenant> tenants = new HashSet<>();
-    
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY,mappedBy = "roles")
-    private Set<MetaData> metadata = new HashSet<MetaData>();
+	private String roleDescription;
+
+	private UUID tenantId;
 	
+	private String status;
+
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
+	private Set<MetaData> metadata = new HashSet<>();
+
 	public Role() {
 
 	}
@@ -40,11 +47,12 @@ public class Role {
 		this.name = name;
 	}
 
-	public Integer getId() {
+
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -64,15 +72,30 @@ public class Role {
 		this.roleDescription = roleDescription;
 	}
 
-	public Set<Tenant> getTenants() {
-		return tenants;
+	public UUID getTenantId() {
+		return tenantId;
 	}
 
-	public void setTenants(Set<Tenant> tenants) {
-		this.tenants = tenants;
+	public void setTenantId(UUID tenantId) {
+		this.tenantId = tenantId;
 	}
 
+	public Set<MetaData> getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(Set<MetaData> metadata) {
+		this.metadata = metadata;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
 	
 	
-	
+
 }

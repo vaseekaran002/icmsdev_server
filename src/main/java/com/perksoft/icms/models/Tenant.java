@@ -1,25 +1,17 @@
 package com.perksoft.icms.models;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
-@Table(name = "tenants")
+@Table(name = "tenant")
 public class Tenant {
 
 	@Id
@@ -41,28 +33,6 @@ public class Tenant {
 	
 	private byte[] favIcon;
 	
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "tenantRoles" , joinColumns = @JoinColumn(name = "tenantId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
-	private Set<Role> roles = new HashSet<Role>();
-	
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "tenantMetadata", joinColumns = @JoinColumn(name = "tenantId"), inverseJoinColumns = @JoinColumn(name = "metaDataId"))
-	private Set<MetaData> metaData = new HashSet<>();
-
-	public Set<MetaData> getMetaData() {
-		return metaData;
-	}
-
-	public void setMetaData(Set<MetaData> metaData) {
-		this.metaData = metaData;
-	}
-
-	public Tenant() {
-
-	}
-
 	public UUID getId() {
 		return id;
 	}
@@ -110,15 +80,5 @@ public class Tenant {
 	public void setFavIcon(byte[] favIcon) {
 		this.favIcon = favIcon;
 	}
-
-	public Set<Role> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
-	}
-	
-	
 
 }

@@ -1,4 +1,4 @@
-package com.perksoft.icms.security.jwt;
+package com.perksoft.icms.config;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -2,6 +2,7 @@ package com.perksoft.icms.models;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -20,36 +21,38 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "metadata")
 public class MetaData {
-		
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY) 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@NotBlank
 	@Size(max = 50)
 	private String componentName;
-	
-	
+
 	private Integer componentOrder;
-	
+
 	private String displayName;
 	
+	private UUID tenantId;
+
 	@NotBlank
 	@Size(max = 20)
 	private String status;
-	
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY  , mappedBy = "metaData")
-	private Set<Tenant> tenants = new HashSet<>();
-	
+
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "metadataRoles" , joinColumns = @JoinColumn(name = "metadataId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
-	private Set<Role> roles = new HashSet<Role>();
+	@JoinTable(name = "metadataRoles", joinColumns = @JoinColumn(name = "metadataId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
+	private Set<Role> roles = new HashSet<>();
 
-	private String role;
 	
+	public UUID getTenantId() {
+		return tenantId;
+	}
+
+	public void setTenantId(UUID tenantId) {
+		this.tenantId = tenantId;
+	}
 
 	public Long getId() {
 		return id;
@@ -67,8 +70,6 @@ public class MetaData {
 		this.componentName = componentName;
 	}
 
-	
-
 	public Set<Role> getRoles() {
 		return roles;
 	}
@@ -83,14 +84,6 @@ public class MetaData {
 
 	public void setComponentOrder(Integer componentOrder) {
 		this.componentOrder = componentOrder;
-	}
-
-	public Set<Tenant> getTenants() {
-		return tenants;
-	}
-
-	public void setTenants(Set<Tenant> tenants) {
-		this.tenants = tenants;
 	}
 
 	public String getStatus() {
@@ -109,17 +102,4 @@ public class MetaData {
 		this.displayName = displayName;
 	}
 
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
-	}
-
-	
-	
-	
-	
-	
 }

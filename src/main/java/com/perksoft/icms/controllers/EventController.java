@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.exception.IcmsCustomException;
 import com.perksoft.icms.payload.request.EventRequest;
-import com.perksoft.icms.payload.response.BandEventResponse;
 import com.perksoft.icms.payload.response.EventResponse;
-import com.perksoft.icms.repository.EventRepository;
 import com.perksoft.icms.service.EventService;
 import com.perksoft.icms.util.CommonUtil;
 
@@ -31,15 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/{tenantid}/events")
+@RequestMapping("/api/{tenantId}/event")
 public class EventController {
 	
 	@Autowired
 	private CommonUtil commonUtil;
 	
-	@Autowired
-	public EventRepository eventRepository;
-
 	@Autowired
 	public EventService eventService;
 
@@ -51,10 +46,11 @@ public class EventController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@PostMapping("/update")
-	public ResponseEntity<String> updateEvent(@PathVariable("tenantid") String tenantId,
+	public ResponseEntity<String> updateEvent(@PathVariable("tenantId") String tenantId,
 			@RequestBody EventRequest eventRequest) throws ParseException {
 		log.info("Started Creating/Updating Event for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+		
 		try {
 			eventRequest.setTenantId(UUID.fromString(tenantId));
 			EventResponse eventResponse = eventService.updateEvent(eventRequest);
@@ -74,9 +70,10 @@ public class EventController {
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<String> getAllEvents(@PathVariable("tenantid") String tenantId) {
+	public ResponseEntity<String> getAllEvents(@PathVariable("tenantId") String tenantId) {
 		log.info("Started fetching Event for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+		
 		try {
 			List<EventResponse> eventList = eventService.getAllEventsByTenantId(tenantId);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
@@ -94,31 +91,12 @@ public class EventController {
 		return responseEntity;
 	}
 
-	@GetMapping("/bands")
-	public ResponseEntity<String> getAllBandInTownEvents(@PathVariable("tenantid") String tenantId) {
-		log.info("Started fetching Band for tenant {}", tenantId);
-		ResponseEntity<String> responseEntity = null;
-		try {
-			BandEventResponse bandEventResponse = eventService.getBandEvents("", "");
-			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
-					bandEventResponse);
-		}
-		catch(IcmsCustomException e) {
-			log.info("Error occurred while fetching Band {}", e.getMessage());
-			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
-		} catch (Exception e) {
-			log.info("Error occurred while fetching Band {}", e.getMessage());
-			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
-					Constants.EXCEPTION);
-		}
-		log.info("End of fetching Band and response {}", responseEntity);
-		return responseEntity;
-	}
 
 	@GetMapping("/{eventId}")
-	public ResponseEntity<String> getEvevtById(@PathVariable("eventId") Long eventId) {
+	public ResponseEntity<String> getEventById(@PathVariable("eventId") Long eventId) {
 		log.info("Started fetching  event {}", eventId);
 		ResponseEntity<String> responseEntity = null;
+		
 		try {
 			EventResponse event = eventService.getEventById(eventId);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,

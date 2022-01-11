@@ -1,7 +1,6 @@
 package com.perksoft.icms.controllers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -24,8 +23,6 @@ import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.GroupRequest;
 import com.perksoft.icms.payload.response.GroupResponse;
 import com.perksoft.icms.payload.response.UserResponse;
-import com.perksoft.icms.repository.GroupRepository;
-import com.perksoft.icms.repository.UserRepository;
 import com.perksoft.icms.service.GroupService;
 import com.perksoft.icms.service.UserService;
 import com.perksoft.icms.util.CommonUtil;
@@ -38,21 +35,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/{tenantid}/group")
+@RequestMapping("/api/{tenantId}/group")
 public class GroupController {
-	
+
 	@Autowired
 	private CommonUtil commonUtil;
 
-
-	@Autowired
-	private UserRepository userRepository;
-	
 	@Autowired
 	private UserService userService;
-
-	@Autowired
-	private GroupRepository groupRepository;
 
 	@Autowired
 	private GroupService groupService;
@@ -64,18 +54,18 @@ public class GroupController {
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
-	@PostMapping("/update")
-	public ResponseEntity<String> createGroup(@PathVariable("tenantid") String tenantId,
+	@PostMapping("/create")
+	public ResponseEntity<String> createGroup(@PathVariable("tenantId") String tenantId,
 			@Valid @RequestBody GroupRequest groupRequest) {
 		log.info("Started Creating/Updating Group for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
 			groupRequest.setTenantid(UUID.fromString(tenantId));
 			GroupResponse groupResponse = groupService.addGroup(groupRequest);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					groupResponse);
-		}
-		catch(IcmsCustomException e) {
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while Creating/Updating Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -95,15 +85,15 @@ public class GroupController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("/list")
-	public ResponseEntity<String> getAllGroups(@PathVariable("tenantid") String tenantId) {
+	public ResponseEntity<String> getAllGroups(@PathVariable("tenantId") String tenantId) {
 		log.info("Started fetching Group for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
 			List<GroupResponse> groupResponse = groupService.fetchGroupsByTenantId(tenantId);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					groupResponse);
-		}
-		catch(IcmsCustomException e) {
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -115,6 +105,14 @@ public class GroupController {
 		return responseEntity;
 	}
 
+	@ApiOperation(value = "Inactivate the group", response = List.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Inactivated group successfully"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+			@ApiResponse(code = 409, message = "Business validaiton error occured"),
+			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
+	@PostMapping("{groupId}/delete")
 	public void deleteGroup(Long id) {
 		groupService.deleteGroup(id);
 	}
@@ -126,28 +124,26 @@ public class GroupController {
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
-	@PostMapping("/member/update")
-	public ResponseEntity<String> addMembers(@PathVariable("tenantid") String tenantId,
-			@RequestBody Group group, @RequestParam("userlist") List<String> userlist) {
+	@PostMapping("{groupId}/member/update")
+	public ResponseEntity<String> addMembers(@PathVariable("tenantId") String tenantId,
+			@PathVariable("groupId") Long groupId, @RequestParam("userlist") List<String> userlist) {
 		log.info("Started adding members to Group for tenant {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
-			Optional<Group> existingGroup = groupRepository.findById(group.getId());
-			existingGroup.get().setTenantId(UUID.fromString(tenantId));
-			for (String i : userlist) {
-				Optional<User> existingUser = userRepository.findById(UUID.fromString(i));
-				if(groupService.isUserPresent(existingGroup.get(), existingUser.get().getId()) == false) {
-					existingGroup.get().getUsers().add(existingUser.get());
-				}
-				else {
-					log.info("Error occurred while  adding members to Group {}", "Member already exist!!");
-					responseEntity = commonUtil.generateEntityResponse("Member already exist!!", Constants.FAILURE, Constants.FAILURE);
+			Group group = groupService.getGroupById(groupId);
+			group.setTenantId(UUID.fromString(tenantId));
+
+			for (String userId : userlist) {
+				User user = userService.getUserByIdAndTenantId(userId, tenantId);
+
+				if (user != null) {
+					group.getUsers().add(user);
 				}
 			}
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
-					groupRepository.save(existingGroup.get()));
-		}
-		catch(IcmsCustomException e) {
+					groupService.saveGroup(group));
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while adding members to Group {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -170,12 +166,12 @@ public class GroupController {
 	public ResponseEntity<String> getAllGroupUsers(@PathVariable("groupid") Long groupId) {
 		log.info("Started fetching group members for Group {}", groupId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
 			GroupResponse groupResponse = groupService.fetchGroupById(groupId);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					groupResponse);
-		}
-		catch(IcmsCustomException e) {
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching group members {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -186,24 +182,24 @@ public class GroupController {
 		log.info("End of fetching group members and response {}", responseEntity);
 		return responseEntity;
 	}
-	
-	@ApiOperation(value = "retrieves a group", response = List.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves user list"),
+
+	@ApiOperation(value = "retrieves a group by id", response = List.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves group"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
-	@GetMapping("/{groupid}")
-	public ResponseEntity<String> getGroupById(@PathVariable("groupid") Long groupId){
+	@GetMapping("/{groupId}")
+	public ResponseEntity<String> getGroupById(@PathVariable("groupId") Long groupId) {
 		log.info("Started fetching  Group {}", groupId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
 			GroupResponse groupResponse = groupService.fetchGroupById(groupId);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					groupResponse);
-		}
-		catch(IcmsCustomException e) {
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching group  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -214,8 +210,7 @@ public class GroupController {
 		log.info("End of fetching group  and response {}", responseEntity);
 		return responseEntity;
 	}
-	
-	
+
 	@ApiOperation(value = "retrieves all groups created by user", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves group list"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -224,15 +219,15 @@ public class GroupController {
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
 	@GetMapping("{userId}/list")
-	public ResponseEntity<String> getGroupsByCreatedBy(@PathVariable("userId") String createdBy){
+	public ResponseEntity<String> getGroupsByCreatedBy(@PathVariable("userId") String createdBy) {
 		log.info("Started fetching  Groups created by User {}", createdBy);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
 			List<GroupResponse> groupResponse = groupService.fetchGroupByCreatedBy(createdBy);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					groupResponse);
-		}
-		catch(IcmsCustomException e) {
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching  Groups created by User  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -243,7 +238,7 @@ public class GroupController {
 		log.info("End of fetching fetching  Groups created by User  and response {}", responseEntity);
 		return responseEntity;
 	}
-	
+
 	@ApiOperation(value = "retrieves all groups of given user", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves group list"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -251,17 +246,18 @@ public class GroupController {
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
-	@GetMapping("/{userid}/added")
-	public ResponseEntity<String> getUserGroupsByMembers(@PathVariable("tenantid") String tenantId,
-			@PathVariable("userid") String userId) {
+	@GetMapping("/{userId}/groups")
+	public ResponseEntity<String> getUserGroupsByMembers(@PathVariable("tenantId") String tenantId,
+			@PathVariable("userId") String userId) {
 		log.info("Started fetching  Groups for User {}", userId);
 		ResponseEntity<String> responseEntity = null;
+
 		try {
-			UserResponse userResponse = userService.getUserById(UUID.fromString(userId), UUID.fromString(tenantId));
+			User user = userService.getUserByIdAndTenantId(userId, tenantId);
+			UserResponse userResponse = userService.convertToUserResponse(user);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					userResponse);
-		}
-		catch(IcmsCustomException e) {
+		} catch (IcmsCustomException e) {
 			log.info("Error occurred while fetching  Groups for User  {}", e.getMessage());
 			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
 		} catch (Exception e) {
@@ -272,5 +268,5 @@ public class GroupController {
 		log.info("End of fetching fetching  Groups for User  and response {}", responseEntity);
 		return responseEntity;
 	}
-	
+
 }
