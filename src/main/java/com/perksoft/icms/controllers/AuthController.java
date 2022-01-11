@@ -93,8 +93,8 @@ public class AuthController {
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
 					.collect(Collectors.toList());
-			Set<MetaData> finalmetadata = new HashSet<>();
-
+            Role userRole = roleRepository.findByName(ERole.valueOf(roles.get(0))).get();
+            Set<MetaData> finalmetadata = userRole.getMetadata();
 			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
 					userDetails.getEmail(), roles, finalmetadata);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
