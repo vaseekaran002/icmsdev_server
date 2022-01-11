@@ -2,6 +2,7 @@ package com.perksoft.icms.models;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -32,6 +33,8 @@ public class MetaData {
 	private Integer componentOrder;
 
 	private String displayName;
+	
+	private UUID tenantId;
 
 	@NotBlank
 	@Size(max = 20)
@@ -41,6 +44,15 @@ public class MetaData {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "metadataRoles", joinColumns = @JoinColumn(name = "metadataId"), inverseJoinColumns = @JoinColumn(name = "roleId"))
 	private Set<Role> roles = new HashSet<>();
+
+	
+	public UUID getTenantId() {
+		return tenantId;
+	}
+
+	public void setTenantId(UUID tenantId) {
+		this.tenantId = tenantId;
+	}
 
 	public Long getId() {
 		return id;
