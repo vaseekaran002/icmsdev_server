@@ -3,6 +3,7 @@ package com.perksoft.icms.controllers;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.exception.IcmsCustomException;
-import com.perksoft.icms.models.ERole;
 import com.perksoft.icms.models.JwtBlacklist;
 import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
@@ -37,10 +37,10 @@ import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.LogoutRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
-import com.perksoft.icms.repository.RoleRepository;
-import com.perksoft.icms.repository.UserRepository;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 import com.perksoft.icms.service.JwtTokenService;
+import com.perksoft.icms.service.RoleService;
+import com.perksoft.icms.service.UserService;
 import com.perksoft.icms.util.CommonUtil;
 
 import io.swagger.annotations.Api;
@@ -60,10 +60,10 @@ public class AuthController {
 	private AuthenticationManager authenticationManager;
 
 	@Autowired
-	private UserRepository userRepository;
+	private UserService userService;
 
 	@Autowired
-	private RoleRepository roleRepository;
+	private RoleService roleService;
 
 	@Autowired
 	private PasswordEncoder encoder;
@@ -97,8 +97,12 @@ public class AuthController {
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
 					.collect(Collectors.toList());
-            Role userRole = roleRepository.findByName(ERole.valueOf(roles.get(0))).get();
-            Set<MetaData> finalmetadata = userRole.getMetadata();
+			List<Role> userRoles = roleService.getRolesByRoleNamesIn(roles);
+			Set<MetaData> finalmetadata = new HashSet<>();
+
+			for (Role role : userRoles) {
+				finalmetadata.addAll(role.getMetadata());
+			}
 			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
 					userDetails.getEmail(), roles, finalmetadata);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
@@ -132,69 +136,48 @@ public class AuthController {
 		log.info("Started signing up user for tenantId {}", tenantId);
 		ResponseEntity<String> responseEntity = null;
 
-		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			log.info("Error occurred while signing up user {}", "Username is already taken!");
-			responseEntity = commonUtil.generateEntityResponse("Username is already taken!", Constants.FAILURE,
-					Constants.FAILURE);
-		}
-		// need to add email validation method
-		if (userRepository.existsByUsername(signUpRequest.getEmail())) {
-			log.info("Error occurred while signing up user {}", "Email is already in use!");
-			responseEntity = commonUtil.generateEntityResponse("Email is already in use!", Constants.FAILURE,
-					Constants.FAILURE);
-		}
+		if (!userService.existsByUsername(signUpRequest.getEmail())) {
 
-		try {
-			// Create new user's account
-			User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(),
-					encoder.encode(signUpRequest.getPassword()));
+			try {
+				User user = new User(signUpRequest.getEmail(), signUpRequest.getEmail(),
+						encoder.encode(signUpRequest.getPassword()));
+				Set<Role> roles = new HashSet<>();
+				List<String> strRoles = signUpRequest.getRoles();
+				
+				if(strRoles!= null && !strRoles.isEmpty()) {
+					
+					for (String roleName : signUpRequest.getRoles()) {
+						Optional<Role> userRole = roleService.getRoleByName(roleName);
 
-			Set<String> strRoles = signUpRequest.getRole();
-			Set<Role> roles = new HashSet<>();
-
-			if (strRoles == null) {
-				Role userRole = roleRepository.findByName(ERole.USER)
-						.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-				roles.add(userRole);
-			} else {
-				strRoles.forEach(role -> {
-					switch (role) {
-					case "superadmin":
-						Role adminRole = roleRepository.findByName(ERole.SUPER_ADMIN)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(adminRole);
-
-						break;
-					case "tenantadmin":
-						Role modRole = roleRepository.findByName(ERole.TENANT_ADMIN)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(modRole);
-
-						break;
-					case "ROLE_MUSICIAN":
-						Role musRole = roleRepository.findByName(ERole.MUSICIAN)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(musRole);
-						break;
-					default:
-						Role userRole = roleRepository.findByName(ERole.USER)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(userRole);
+						if (userRole.isPresent()) {
+							roles.add(userRole.get());
+						}
 					}
-				});
+					user.setRoles(roles);
+				}				
+				
+				
+				user.setFirstName(signUpRequest.getFirstName());
+				user.setLastName(signUpRequest.getLastName());
+				user.setMobileNumber(signUpRequest.getMobileNumber());
+				user.setTenantId(UUID.fromString(tenantId));
+				userService.saveUser(user);
+				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
+			} catch (IcmsCustomException e) {
+				e.printStackTrace();
+				log.info("Error occurred while signing up user {}", e.getMessage());
+				responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE,
+						Constants.FAILURE);
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.info("Error occurred while signing up user {}", e.getMessage());
+				responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+						Constants.EXCEPTION);
 			}
-
-			user.setRoles(roles);
-			user.setTenantId(UUID.fromString(tenantId));
-			userRepository.save(user);
-			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
-		} catch (IcmsCustomException e) {
-			log.info("Error occurred while signing up user {}", e.getMessage());
-			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
-		} catch (Exception e) {
-			log.info("Error occurred while signing up user {}", e.getMessage());
-			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
-					Constants.EXCEPTION);
+		} else {
+			log.info("Username/email address is already created! {}", "");
+			responseEntity = commonUtil.generateEntityResponse("Username/email address is already created!",
+					Constants.FAILURE, Constants.FAILURE);
 		}
 		log.info("End of signing up user and response {}", responseEntity);
 		return responseEntity;

@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,14 +23,13 @@ public class Role {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Enumerated(EnumType.STRING)
 	@Column(length = 20)
-	private ERole name;
+	private String name;
 
 	private String roleDescription;
 
 	private UUID tenantId;
-	
+
 	private String status;
 
 	@JsonIgnore
@@ -43,10 +40,9 @@ public class Role {
 
 	}
 
-	public Role(ERole name) {
+	public Role(String name) {
 		this.name = name;
 	}
-
 
 	public Long getId() {
 		return id;
@@ -56,11 +52,11 @@ public class Role {
 		this.id = id;
 	}
 
-	public ERole getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(ERole name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
@@ -95,7 +91,5 @@ public class Role {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
-	
 
 }

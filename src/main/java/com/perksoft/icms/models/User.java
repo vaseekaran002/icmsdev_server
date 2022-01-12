@@ -21,11 +21,11 @@ public class User {
 	private UUID id;
 
 	@NotBlank
-	@Size(max = 20)
+	@Size(max = 255)
 	private String username;
 
 	@NotBlank
-	@Size(max = 50)
+	@Size(max = 255)
 	@Email
 	private String email;
 
@@ -33,13 +33,13 @@ public class User {
 	@Size(max = 120)
 	private String password;
 
-	@Size(max = 20)
+	@Size(max = 255)
 	private String firstName;
 
-	@Size(max = 20)
+	@Size(max = 255)
 	private String lastName;
 
-	@Size(max = 10)
+	@Size(max = 15)
 	private String mobileNumber;
 
 	private UUID tenantId;
