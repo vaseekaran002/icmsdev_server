@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.MultiValueMap;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class WebClientRequest {
 	private String resourceUrl;
 	private String contentType;
 	private Map<String, String> uriVariables;
+	private MultiValueMap<String, String> queryParams;
 	private Consumer<HttpHeaders> headers;
 	private String data;
 	

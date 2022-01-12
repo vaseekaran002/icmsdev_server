@@ -11,6 +11,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,6 +40,9 @@ public class MusicianService {
 	@Value("${perksoft.icms.staks-club.endpoints.musician-info}")
 	private String musicianInfoResourceUrl;
 	
+	@Value("${perksoft.icms.staks-club.endpoints.musician-by-filter}")
+	private String musicianByFilterResourceUrl;
+	
 	public ResponseEntity<String> getMusician(String musicianId) throws JsonMappingException, JsonProcessingException {
 		
 		Map<String, String> uriParams = new HashMap<String, String>();
@@ -50,6 +55,28 @@ public class MusicianService {
 				musicianInfoResourceUrl, 
 				MediaType.APPLICATION_JSON_VALUE, 
 				uriParams,
+				null,
+				requestHeaders, 
+				"");
+		WebClientResponse response = new WebClientResponse();
+		
+		webClientSupport.processRequest(request, response);
+		
+		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponse(response.getData()));
+	}
+	
+	public ResponseEntity<String> getMusicianByStaksId(String staksId) throws JsonMappingException, JsonProcessingException {
+		MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+		queryParams.add("filter", String.format("sid=%s", staksId));
+
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> httpHeaders.add("Authorization", "Basic RmFuT25lOkZhbjEyMyFAIw==");
+		
+		WebClientRequest request = new WebClientRequest(
+				HttpMethod.GET,
+				musicianByFilterResourceUrl, 
+				MediaType.APPLICATION_JSON_VALUE, 
+				null,
+				queryParams,
 				requestHeaders, 
 				"");
 		WebClientResponse response = new WebClientResponse();
@@ -72,8 +99,6 @@ public class MusicianService {
 		response.setGenres(jsonNode.get("genres").asText());
 		
 		return response;
-	}
-
-	
+	}	
 	
 }
