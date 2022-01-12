@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.perksoft.icms.contants.Constants;
@@ -38,12 +37,12 @@ public class MusicianService {
 	@Value("${perksoft.icms.staks-club.endpoints.musician-info}")
 	private String musicianInfoResourceUrl;
 	
-	public ResponseEntity<String> getMusician(String musicianId) throws JsonMappingException, JsonProcessingException {
+	public ResponseEntity<String> getMusicianByRadaptiveId(String radaptiveId) throws JsonProcessingException {
 		
-		Map<String, String> uriParams = new HashMap<String, String>();
-		uriParams.put("musicianId", musicianId);
+		Map<String, String> uriParams = new HashMap<>();
+		uriParams.put("musicianId", radaptiveId);
 
-		Consumer<HttpHeaders> requestHeaders = httpHeaders -> httpHeaders.add("Authorization", "Basic RmFuT25lOkZhbjEyMyFAIw==");
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> httpHeaders.add("Authorization", "Basic U3Rha3NQYXJ0bmVyLUFkbWluOmE0OTM4OGFkMw==");
 		
 		WebClientRequest request = new WebClientRequest(
 				HttpMethod.GET,
@@ -59,7 +58,7 @@ public class MusicianService {
 		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponse(response.getData()));
 	}
 	
-	private MusicianResponse mapResponse(String data) throws JsonMappingException, JsonProcessingException {
+	private MusicianResponse mapResponse(String data) throws JsonProcessingException {
 		JsonNode jsonNode = objectMapper.readTree(data);
 		
 		MusicianResponse response = new MusicianResponse();

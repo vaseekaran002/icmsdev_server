@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.perksoft.icms.service.MusicianService;
 
 @RestController
@@ -16,11 +15,11 @@ public class MusicianController {
 	@Autowired
 	private MusicianService service;
 	
-	@GetMapping(value = "/musician/{musicianId}")
-	public ResponseEntity<String> getMusician(@PathVariable(name = "musicianId") String musicianId) 
-			throws JsonMappingException, JsonProcessingException 
+	@GetMapping(value = "/musician/{radaptiveId}")
+	public ResponseEntity<String> getMusicianByRadaptiveId(@PathVariable(name = "radaptiveId") String musicianId) 
+			throws JsonProcessingException 
 	{
-		return service.getMusician(musicianId);		
+		return service.getMusicianByRadaptiveId(musicianId);		
 	}
 	
 	

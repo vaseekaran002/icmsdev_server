@@ -30,7 +30,7 @@ public class CommonUtil {
 				responseMap.put("status", Constants.SUCCESS);
 				responseMap.put("message", message);
 				responseMap.put("data", responseData);
-				String json = objectMapper.writeValueAsString(responseData);
+				String json = objectMapper.writeValueAsString(responseMap);
 				responseEntity = new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
 
