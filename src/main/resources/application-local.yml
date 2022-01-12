@@ -3,3 +3,10 @@ spring:
     url: jdbc:postgresql://18.205.56.216:5432/icms
     username: postgres
     password: postgres
+    
+perksoft:
+  icms:
+    staks-club:
+      endpoints:
+        base-url: http://34.205.19.99:8080
+        musician-info: /services/api/form/Musician/{musicianId}
