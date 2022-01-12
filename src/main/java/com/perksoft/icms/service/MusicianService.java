@@ -1,6 +1,8 @@
 package com.perksoft.icms.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -39,15 +41,18 @@ public class MusicianService {
 	@Value("${perksoft.icms.staks-club.endpoints.musician-info}")
 	private String musicianInfoResourceUrl;
 	
-  @Value("${perksoft.icms.staks-club.endpoints.musician-by-filter}")
+	@Value("${perksoft.icms.staks-club.endpoints.musician-by-filter}")
 	private String musicianByFilterResourceUrl;
+	
+	@Value("${perksoft.icms.staks-club.endpoints.musician-members}")
+	private String musicianMembersResourceUrl;
   
-  public ResponseEntity<String> getMusicianByRadaptiveId(String radaptiveId) throws JsonProcessingException {
+	public ResponseEntity<String> getMusicianByRadaptiveId(String musicianId) throws JsonProcessingException {
 		
 		Map<String, String> uriParams = new HashMap<>();
-		uriParams.put("musicianId", radaptiveId);
+		uriParams.put("musicianId", musicianId);
 
-		Consumer<HttpHeaders> requestHeaders = httpHeaders -> httpHeaders.add("Authorization", "Basic U3Rha3NQYXJ0bmVyLUFkbWluOmE0OTM4OGFkMw==");
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> addRequestHeaders(httpHeaders);
 		
 		WebClientRequest request = new WebClientRequest(
 				HttpMethod.GET,
@@ -61,10 +66,11 @@ public class MusicianService {
 		
 		webClientSupport.processRequest(request, response);
 		
-		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponse(response.getData()));
+		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponse(jsonNode));
 	}
 	
-	public ResponseEntity<String> getMusicianByStaksId(String staksId) throws JsonMappingException, JsonProcessingException {
+	public ResponseEntity<String> getMusicianByStaksId(String staksId) throws JsonProcessingException {
 		MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
 		queryParams.add("filter", String.format("sid=%s", staksId));
 
@@ -82,11 +88,33 @@ public class MusicianService {
 		
 		webClientSupport.processRequest(request, response);
 		
-		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponse(response.getData()));
+		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponse(jsonNode));
 	}
 	
-	private MusicianResponse mapResponse(String data) throws JsonProcessingException {
-		JsonNode jsonNode = objectMapper.readTree(data);
+	public ResponseEntity<String> getMusicianMembers(String musicianId) throws JsonProcessingException {
+		Map<String, String> uriParams = new HashMap<>();
+		uriParams.put("musicianId", musicianId);
+
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> addRequestHeaders(httpHeaders);
+		
+		WebClientRequest request = new WebClientRequest(
+				HttpMethod.GET,
+				musicianMembersResourceUrl, 
+				MediaType.APPLICATION_JSON_VALUE, 
+				uriParams,
+				null,
+				requestHeaders, 
+				"");
+		WebClientResponse response = new WebClientResponse();
+		
+		webClientSupport.processRequest(request, response);
+		
+		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapResponses(jsonNode));
+	}
+	
+	private MusicianResponse mapResponse(JsonNode jsonNode) throws JsonProcessingException {
 		
 		MusicianResponse response = new MusicianResponse();
 		response.setRadaptiveId(jsonNode.get("id").asText());
@@ -98,6 +126,19 @@ public class MusicianService {
 		response.setGenres(jsonNode.get("genres").asText());
 		
 		return response;
-	}	
+	}
+	
+	private List<MusicianResponse> mapResponses(JsonNode jsonNodes) throws JsonProcessingException {
+		List<MusicianResponse> response = new ArrayList<>();
+		for (JsonNode node : jsonNodes) {
+			response.add(mapResponse(node));
+		}
+		
+		return response;
+	}
+	
+	private void addRequestHeaders(HttpHeaders httpHeaders) {
+		httpHeaders.add("Authorization", "Basic U3Rha3NQYXJ0bmVyLUFkbWluOmE0OTM4OGFkMw==");
+	}
 	
 }

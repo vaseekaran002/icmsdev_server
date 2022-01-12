@@ -15,8 +15,8 @@ public class MusicianController {
 	@Autowired
 	private MusicianService service;
 	
-	@GetMapping(value = "/musician/{radaptiveId}")
-	public ResponseEntity<String> getMusicianByRadaptiveId(@PathVariable(name = "radaptiveId") String musicianId) 
+	@GetMapping(value = "/musician/{musicianId}")
+	public ResponseEntity<String> getMusicianByRadaptiveId(@PathVariable(name = "musicianId") String musicianId) 
 			throws JsonProcessingException 
 	{
 		return service.getMusicianByRadaptiveId(musicianId);		
@@ -24,9 +24,16 @@ public class MusicianController {
 	
 	@GetMapping(value = "/musician/staks/{staksId}")
 	public ResponseEntity<String> getMusicianByStaksId(@PathVariable(name = "staksId") String staksId) 
-			throws JsonMappingException, JsonProcessingException 
+			throws JsonProcessingException 
 	{
 		return service.getMusicianByStaksId(staksId);		
+	}
+	
+	@GetMapping(value = "/musician/{musicianId}/members")
+	public ResponseEntity<String> getMusicianMembers(@PathVariable(name = "musicianId") String musicianId) 
+			throws JsonProcessingException 
+	{
+		return service.getMusicianMembers(musicianId);		
 	}
 	
 	
