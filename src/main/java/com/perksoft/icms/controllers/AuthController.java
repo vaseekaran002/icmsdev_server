@@ -37,6 +37,7 @@ import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.LogoutRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
+import com.perksoft.icms.repository.MetaDataRepository;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 import com.perksoft.icms.service.JwtTokenService;
 import com.perksoft.icms.service.RoleService;
@@ -64,6 +65,7 @@ public class AuthController {
 
 	@Autowired
 	private RoleService roleService;
+	
 
 	@Autowired
 	private PasswordEncoder encoder;
@@ -90,19 +92,14 @@ public class AuthController {
 		try {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			String jwt = jwtTokenService.generateToken(authentication);
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
 					.collect(Collectors.toList());
-			List<Role> userRoles = roleService.getRolesByRoleNamesIn(roles);
-			Set<MetaData> finalmetadata = new HashSet<>();
-
-			for (Role role : userRoles) {
-				finalmetadata.addAll(role.getMetadata());
-			}
+			List<MetaData> metadatas = roleService.getMetatdataByRoleNames(roles);
+			Set<MetaData> finalmetadata = new HashSet<MetaData>(metadatas);
 			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
 					userDetails.getEmail(), roles, finalmetadata);
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
