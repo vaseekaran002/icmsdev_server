@@ -16,7 +16,7 @@ import com.perksoft.icms.models.WebClientResponse;
 @Component
 public class WebClientSupport {
 
-	WebClient client;
+	private WebClient client;
 
 	@Autowired
 	public WebClientSupport(@Value("${perksoft.icms.staks-club.endpoints.base-url}") String baseurl) {
