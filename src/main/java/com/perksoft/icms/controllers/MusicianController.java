@@ -22,5 +22,12 @@ public class MusicianController {
 		return service.getMusicianByRadaptiveId(musicianId);		
 	}
 	
+	@GetMapping(value = "/musician/staks/{staksId}")
+	public ResponseEntity<String> getMusicianByStaksId(@PathVariable(name = "staksId") String staksId) 
+			throws JsonMappingException, JsonProcessingException 
+	{
+		return service.getMusicianByStaksId(staksId);		
+	}
+	
 	
 }

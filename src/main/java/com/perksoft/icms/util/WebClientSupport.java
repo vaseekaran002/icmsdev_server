@@ -1,5 +1,7 @@
 package com.perksoft.icms.util;
 
+import java.net.URI;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -9,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
 import org.springframework.web.reactive.function.client.WebClient.UriSpec;
+import org.springframework.web.util.UriBuilder;
 
 import com.perksoft.icms.models.WebClientRequest;
 import com.perksoft.icms.models.WebClientResponse;
@@ -27,7 +30,7 @@ public class WebClientSupport {
 		UriSpec<RequestBodySpec> uriSpec = client.method(request.getVerb());
 		
 		RequestBodySpec bodySpec = uriSpec.uri(
-				  uriBuilder -> uriBuilder.path(request.getResourceUrl()).build(request.getUriVariables()));
+				  uriBuilder -> buildUri(uriBuilder, request) );
 		
 		
 		RequestHeadersSpec<?> headersSpec = bodySpec.bodyValue(request.getData())
@@ -40,6 +43,21 @@ public class WebClientSupport {
 		response.setStatusCode(clientResponse.statusCode());
 		response.setHeaders(clientResponse.headers());
 		response.setData(clientResponse.bodyToMono(String.class).block());
+		
+	}
+	
+	private URI buildUri(UriBuilder uriBuilder, WebClientRequest request) {
+		
+		uriBuilder = uriBuilder.path(request.getResourceUrl());
+		if(request.getQueryParams() !=null) {
+			uriBuilder = uriBuilder.queryParams(request.getQueryParams());
+		}
+		if(request.getUriVariables() != null) {
+			return uriBuilder.build(request.getUriVariables());
+		} else {
+			return uriBuilder.build();
+		}
+		
 		
 	}
 
