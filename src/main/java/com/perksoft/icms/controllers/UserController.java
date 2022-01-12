@@ -1,6 +1,7 @@
 package com.perksoft.icms.controllers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.exception.IcmsCustomException;
 import com.perksoft.icms.models.Page;
+import com.perksoft.icms.models.Role;
 import com.perksoft.icms.models.User;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.PageResponse;
 import com.perksoft.icms.payload.response.UserResponse;
+import com.perksoft.icms.service.RoleService;
 import com.perksoft.icms.service.UserService;
 import com.perksoft.icms.util.CommonUtil;
 
@@ -40,6 +43,9 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private RoleService roleService;
 
 	@ApiOperation(value = "retrieves  user by user id", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves group list"),
@@ -92,7 +98,8 @@ public class UserController {
 				existingUser.setLastName(signupRequest.getLastName());
 				existingUser.setMobileNumber(signupRequest.getMobileNumber());
 				existingUser.setProfileImage(signupRequest.getProfileImage());
-				existingUser.setRoles(signupRequest.getRoles());
+				List<Role> userRoles = roleService.getRolesByRoleNamesIn(signupRequest.getRoles());
+				existingUser.setRoles(new HashSet<>(userRoles));
 				User user = userService.saveUser(existingUser);
 				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
 			} else {

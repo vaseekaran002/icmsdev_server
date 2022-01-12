@@ -21,6 +21,10 @@ public class UserService {
 
 	@Autowired
 	private PageService pageService;
+	
+	public boolean existsByUsername(String username) {
+		return userRepository.existsByUsername(username);
+	}
 
 	public List<User> getAllUsers(String tenantId) {
 		return userRepository.findAllByTenantId(UUID.fromString(tenantId));

@@ -1,8 +1,6 @@
 package com.perksoft.icms.payload.request;
 
-import java.util.Set;
-
-import com.perksoft.icms.models.Role;
+import java.util.List;
 
 import lombok.Data;
 
@@ -14,9 +12,7 @@ public class MetadataRequest {
 	private Integer componentOrder;
 	private String displayName;
 	private String status;
-	private Set<String>roles;
-	private String tenantid;
-	
-	
+	private List<String>roles;
+	private String tenantid;	
 	
 }
