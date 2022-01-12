@@ -37,7 +37,6 @@ import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.LogoutRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
-import com.perksoft.icms.repository.MetaDataRepository;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 import com.perksoft.icms.service.JwtTokenService;
 import com.perksoft.icms.service.RoleService;
@@ -65,7 +64,6 @@ public class AuthController {
 
 	@Autowired
 	private RoleService roleService;
-	
 
 	@Autowired
 	private PasswordEncoder encoder;
@@ -90,18 +88,7 @@ public class AuthController {
 		ResponseEntity<String> responseEntity = null;
 
 		try {
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			String jwt = jwtTokenService.generateToken(authentication);
-
-			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-					.collect(Collectors.toList());
-			List<MetaData> metadatas = roleService.getMetatdataByRoleNames(roles);
-			Set<MetaData> finalmetadata = new HashSet<MetaData>(metadatas);
-			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
-					userDetails.getEmail(), roles, finalmetadata);
+			JwtResponse jwtResponse = getJWTResponse(loginRequest.getUsername(), loginRequest.getPassword());
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					jwtResponse);
 
@@ -118,6 +105,22 @@ public class AuthController {
 		}
 		log.info("End of authenticateUser and response {}", responseEntity);
 		return responseEntity;
+	}
+
+	private JwtResponse getJWTResponse(String username, String password) {
+		log.info("password is=========="+password);
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String jwt = jwtTokenService.generateToken(authentication);
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+				.collect(Collectors.toList());
+		List<MetaData> metadatas = roleService.getMetatdataByRoleNames(roles);
+		Set<MetaData> finalmetadata = new HashSet<>(metadatas);
+		return new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles,
+				finalmetadata);
 	}
 
 	@ApiOperation(value = "Successfully created new user", response = List.class)
@@ -140,9 +143,9 @@ public class AuthController {
 						encoder.encode(signUpRequest.getPassword()));
 				Set<Role> roles = new HashSet<>();
 				List<String> strRoles = signUpRequest.getRoles();
-				
-				if(strRoles!= null && !strRoles.isEmpty()) {
-					
+
+				if (strRoles != null && !strRoles.isEmpty()) {
+
 					for (String roleName : signUpRequest.getRoles()) {
 						Optional<Role> userRole = roleService.getRoleByName(roleName);
 
@@ -151,15 +154,16 @@ public class AuthController {
 						}
 					}
 					user.setRoles(roles);
-				}				
-				
-				
+				}
+
 				user.setFirstName(signUpRequest.getFirstName());
 				user.setLastName(signUpRequest.getLastName());
 				user.setMobileNumber(signUpRequest.getMobileNumber());
 				user.setTenantId(UUID.fromString(tenantId));
 				userService.saveUser(user);
-				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
+				JwtResponse jwtResponse = getJWTResponse(signUpRequest.getEmail(), signUpRequest.getPassword());
+				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+						jwtResponse);
 			} catch (IcmsCustomException e) {
 				e.printStackTrace();
 				log.info("Error occurred while signing up user {}", e.getMessage());
