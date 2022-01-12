@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
 
 @Repository
@@ -18,5 +19,8 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
 	@Query("SELECT r FROM Role r WHERE r.name IN (:roles)")  
 	List<Role> findByRolesIn(@Param(value = "roles") List<String> roles);
 
+	@Query("SELECT r.metadata FROM Role r WHERE r.name IN (:roles)")
+	List<MetaData> findByMetaDataIn(@Param(value = "roles") List<String> roles);
+	
 	List<Role> findAllByTenantId(UUID tenantId);
 }
