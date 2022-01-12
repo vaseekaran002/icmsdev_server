@@ -1,8 +1,8 @@
 package com.perksoft.icms.service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -10,30 +10,26 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.perksoft.icms.models.ERole;
 import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
 import com.perksoft.icms.payload.request.MetadataRequest;
 import com.perksoft.icms.payload.response.MetadataResponse;
 import com.perksoft.icms.repository.MetaDataRepository;
-import com.perksoft.icms.repository.RoleRepository;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 public class MetaDataService {
 
 	@Autowired
 	private MetaDataRepository metaDataRepository;
-	
+
 	@Autowired
-	private RoleRepository roleRepository;
+	private RoleService roleService;
 
 	public List<MetadataResponse> getAllMetaData() {
 		List<MetaData> metadatas = metaDataRepository.findAll();
 		return convertToMetadataResponse(metadatas);
 	}
-	
+
 	public MetaData updateMetadata(MetadataRequest metadataRequest) {
 		MetaData metadata = new MetaData();
 		metadata.setId(metadataRequest.getId());
@@ -42,17 +38,22 @@ public class MetaDataService {
 		metadata.setDisplayName(metadataRequest.getDisplayName());
 		metadata.setStatus(metadataRequest.getStatus());
 		metadata.setTenantId(UUID.fromString(metadataRequest.getTenantid()));
-		Set<Role> roles = new HashSet<Role>();
+		Set<Role> roles = new HashSet<>();
+
 		for (String role : metadataRequest.getRoles()) {
-			roles.add(roleRepository.findByName(ERole.valueOf(role)).get());
+			Optional<Role> optionalRole = roleService.getRoleByName(role);
+
+			if (optionalRole.isPresent()) {
+				roles.add(optionalRole.get());
+			}
 		}
 		metadata.setRoles(roles);
 		return metaDataRepository.save(metadata);
 	}
 
-	public List<MetadataResponse> convertToMetadataResponse(List<MetaData> metadatas){
-		List<MetadataResponse> metadataResponses = new ArrayList<MetadataResponse>();
-		metadataResponses = metadatas.stream().map(meta -> {
+	public List<MetadataResponse> convertToMetadataResponse(List<MetaData> metadatas) {
+
+		return metadatas.stream().map(meta -> {
 			MetadataResponse metadataResponse = new MetadataResponse();
 			metadataResponse.setId(meta.getId());
 			metadataResponse.setComponentName(meta.getComponentName());
@@ -63,6 +64,5 @@ public class MetaDataService {
 			metadataResponse.setTenantId(meta.getTenantId());
 			return metadataResponse;
 		}).collect(Collectors.toList());
-		return metadataResponses;
 	}
 }

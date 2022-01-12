@@ -1,7 +1,5 @@
 package com.perksoft.icms.payload.request;
 
-import java.util.UUID;
-
 import lombok.Data;
 
 @Data
