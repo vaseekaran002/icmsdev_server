@@ -37,12 +37,12 @@ public class MusicianController {
 	public ResponseEntity<String> getMusician(
 			@RequestParam(name = "staksId", required = false) String staksId,
 			@RequestParam(name = "artistName", required = false) String artistName,
-			@RequestParam(name = "location", required = false) String location,
+			@RequestParam(name = "city", required = false) String city,
 			@RequestParam(name = "genre", required = false) String genre
 			) 
 			throws JsonProcessingException 
 	{
-		return service.getMusician(staksId, artistName, location, genre);		
+		return service.getMusician(staksId, artistName, city, genre);		
 	}
 	
 	@GetMapping(value = "/musician/{musicianId}/members")
