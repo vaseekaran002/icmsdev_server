@@ -10,5 +10,8 @@ perksoft:
       endpoints:
         base-url: http://34.205.19.99:8080
         musician-info: /services/api/form/Musician/{musicianId}
+        musician-new: /services/api/form/musician
+        musician-update: /services/api/form/musician/{musicianId}
         musician-members: /services/api/related/tickets/{musicianId}
+        musician-members-new: /services/api/related/modify
         musician-by-filter: /services/api/form/dynamic/Musician
