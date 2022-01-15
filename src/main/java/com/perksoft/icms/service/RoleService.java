@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.perksoft.icms.models.MetaData;
 import com.perksoft.icms.models.Role;
 import com.perksoft.icms.payload.request.RoleRequest;
 import com.perksoft.icms.payload.response.RoleResponse;
@@ -25,6 +26,10 @@ public class RoleService {
 
 	public List<Role> getRolesByRoleNamesIn(List<String> roles) {
 		return roleRepository.findByRolesIn(roles);
+	}
+	
+	public List<MetaData> getMetatdataByRoleNames(List<String> roles){
+		return roleRepository.findByMetaDataIn(roles);
 	}
 
 	public Role updateRole(RoleRequest roleRequest) {
