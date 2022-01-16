@@ -47,7 +47,6 @@ public class WebClientSupport {
 	}
 	
 	private URI buildUri(UriBuilder uriBuilder, WebClientRequest request) {
-		
 		uriBuilder = uriBuilder.path(request.getResourceUrl());
 		if(request.getQueryParams() !=null) {
 			uriBuilder = uriBuilder.queryParams(request.getQueryParams());
@@ -57,8 +56,6 @@ public class WebClientSupport {
 		} else {
 			return uriBuilder.build();
 		}
-		
-		
 	}
 
 }
