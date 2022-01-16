@@ -73,6 +73,39 @@ public class AuthController {
 
 	@Autowired
 	private CommonUtil commonUtil;
+	
+	@ApiOperation(value = "sign user", response = List.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves token and user details"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+			@ApiResponse(code = 409, message = "Business validaiton error occured"),
+			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
+	@PostMapping("/signin")
+	public ResponseEntity<String> signInAuthenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+			@PathVariable("tenantid") String tenantId) {
+		log.info("Started authenticateUser for tenantId {} and username is {}", tenantId, loginRequest.getUsername());
+		ResponseEntity<String> responseEntity = null;
+
+		try {
+			JwtResponse jwtResponse = getJWTResponse(loginRequest.getUsername(), loginRequest.getPassword());
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+					jwtResponse);
+
+		} catch (IcmsCustomException e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (BadCredentialsException e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (Exception e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+					Constants.EXCEPTION);
+		}
+		log.info("End of authenticateUser and response {}", responseEntity);
+		return responseEntity;
+	}
 
 	@ApiOperation(value = "sign user", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves token and user details"),
