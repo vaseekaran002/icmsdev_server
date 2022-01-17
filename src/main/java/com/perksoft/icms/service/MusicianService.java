@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.perksoft.icms.contants.Constants;
+import com.perksoft.icms.models.Contract;
 import com.perksoft.icms.models.Musician;
 import com.perksoft.icms.models.WebClientRequest;
 import com.perksoft.icms.models.WebClientResponse;
@@ -55,9 +56,21 @@ public class MusicianService {
 	@Value("${perksoft.icms.staks-club.endpoints.musician-members}")
 	private String musicianMembersResourceUrl;
 	
-	@Value("${perksoft.icms.staks-club.endpoints.musician-members-new}")
-	private String musicianMembersNewResourceUrl;
+	@Value("${perksoft.icms.staks-club.endpoints.musician-subdtls-modify}")
+	private String musicianSubDetailsModifyResourceUrl;
+	
+	@Value("${perksoft.icms.staks-club.endpoints.contract-create}")
+	private String contractCreateResourceUrl;
   
+	@Value("${perksoft.icms.staks-club.endpoints.contract-view}")
+	private String contractViewResourceUrl;
+	
+	private static final String FORMNAME_MUSICIAN = "Musician";
+	
+	private static final String FORMNAME_CONTRACT = "Contract";
+	
+	private static final String ACTION_CREATE = "CREATE";
+	
 	public ResponseEntity<String> createMusician(Musician musician) throws JsonProcessingException {
 		WebClientRequest request;
 		String requestBody = mapRequest(musician);
@@ -173,12 +186,12 @@ public class MusicianService {
 	}
 	
 	public ResponseEntity<String> newMusicianMembers(String musicianId, String memberId) throws JsonProcessingException {
-		String requestBody = mapRequest(musicianId, memberId);
+		String requestBody = mapRequest(ACTION_CREATE, musicianId, FORMNAME_MUSICIAN, memberId);
 		Consumer<HttpHeaders> requestHeaders = httpHeaders -> addRequestHeaders(httpHeaders);
 		
 		WebClientRequest request = new WebClientRequest(
 				HttpMethod.POST,
-				musicianMembersNewResourceUrl, 
+				musicianSubDetailsModifyResourceUrl, 
 				MediaType.APPLICATION_JSON_VALUE, 
 				null,
 				null,
@@ -189,6 +202,70 @@ public class MusicianService {
 		webClientSupport.processRequest(request, response);
 		
 		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, "");
+	}
+	
+	public ResponseEntity<String> createContract(String musicianId, Contract contractRequest) throws JsonProcessingException {
+		
+		String requestBody = objectMapper.writeValueAsString(contractRequest);
+		
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> addRequestHeaders(httpHeaders);
+		
+		WebClientRequest request = new WebClientRequest(
+				HttpMethod.POST,
+				contractCreateResourceUrl, 
+				MediaType.APPLICATION_JSON_VALUE, 
+				null,
+				null,
+				requestHeaders, 
+				requestBody);
+		WebClientResponse response = new WebClientResponse();
+		
+		webClientSupport.processRequest(request, response);
+		
+		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		
+		linkContract(musicianId, jsonNode.get("contractId").asText());
+		
+		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, "");
+	}
+	
+	public ResponseEntity<String> getContract(String musicianId, String contractId) throws JsonProcessingException {
+		Map<String, String> uriParams = new HashMap<>();
+		uriParams.put("contractId", contractId);
+
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> addRequestHeaders(httpHeaders);
+		
+		WebClientRequest request = new WebClientRequest(
+				HttpMethod.GET,
+				contractViewResourceUrl, 
+				MediaType.APPLICATION_JSON_VALUE, 
+				uriParams,
+				null,
+				requestHeaders, 
+				"");
+		WebClientResponse response = new WebClientResponse();
+		
+		webClientSupport.processRequest(request, response);
+		
+		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, mapContractResponse(jsonNode));
+	}
+	
+	private void linkContract(String musicianId, String contractId) throws JsonProcessingException {
+		String requestBody = mapRequest(ACTION_CREATE, musicianId, FORMNAME_CONTRACT, contractId);
+		Consumer<HttpHeaders> requestHeaders = httpHeaders -> addRequestHeaders(httpHeaders);
+		
+		WebClientRequest request = new WebClientRequest(
+				HttpMethod.POST,
+				musicianSubDetailsModifyResourceUrl, 
+				MediaType.APPLICATION_JSON_VALUE, 
+				null,
+				null,
+				requestHeaders, 
+				requestBody);
+		WebClientResponse response = new WebClientResponse();
+		
+		webClientSupport.processRequest(request, response);
 	}
 	
 	private Musician mapResponse(JsonNode jsonNode) throws JsonProcessingException {
@@ -235,17 +312,30 @@ public class MusicianService {
 	    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(request);
 	}
 	
-	private String mapRequest(String musicianId, String memberId) throws JsonProcessingException {
+	private String mapRequest(String action, String musicianId, String formName, String relationId) throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 
 	    ObjectNode request = mapper.createObjectNode();
-	    request.put("action", "CREATE");
-	    request.put("formName", "Musician");
+	    request.put("action", action);
+	    request.put("formName", formName);
 	    request.put("relType", "Ticket");
-	    request.put("relatedIds", memberId);
+	    request.put("relatedIds", relationId);
 	    request.put("ticketId", musicianId);
 
 	    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(request);
+		
+	}
+	
+	private Contract mapContractResponse(JsonNode jsonNode) {
+		Contract response = new Contract();
+		
+		response.setTitle(jsonNode.get("title").asText());
+		response.setTimeZone(jsonNode.get("timeZone").asText());
+		response.setVenue(jsonNode.get("venue").asText());
+		response.setFees(jsonNode.get("fees").asText());
+		response.setChannelName(jsonNode.get("channelName").asText());
+		
+		return response;
 		
 	}
 	
