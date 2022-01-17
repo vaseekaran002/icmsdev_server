@@ -21,6 +21,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +38,7 @@ import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.LogoutRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
+import com.perksoft.icms.payload.response.RoleResponse;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 import com.perksoft.icms.service.JwtTokenService;
 import com.perksoft.icms.service.RoleService;
@@ -141,7 +143,6 @@ public class AuthController {
 	}
 
 	private JwtResponse getJWTResponse(String username, String password) {
-		log.info("password is=========="+password);
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -232,7 +233,7 @@ public class AuthController {
 
 		try {
 			JwtBlacklist jwtBlacklist = new JwtBlacklist();
-			jwtBlacklist.setToken(logoutRequest.getToken());
+			jwtBlacklist.setToken(logoutRequest.getAccessToken());
 			jwtBlacklist.setUsername(logoutRequest.getUsername());
 			jwtBlacklist.setLogoutTime(LocalDateTime.now());
 			jwtBlacklist = jwtTokenService.saveJwtBlacklist(jwtBlacklist);
@@ -244,6 +245,33 @@ public class AuthController {
 		}
 
 		log.info("End of logout user and response {}", responseEntity);
+		return responseEntity;
+	}
+	
+	@ApiOperation(value = "Used to fetch all role without token", response = List.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully fetches roles"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+			@ApiResponse(code = 409, message = "Business validaiton error occured"),
+			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
+	@GetMapping("/role/list")
+	public ResponseEntity<String> getRolesByTenantId(@PathVariable("tenantid") String tenantId){
+		log.info("Started fetching post for tenant {}", tenantId);
+		ResponseEntity<String> responseEntity = null;
+		try {
+			List<RoleResponse> roles = roleService.getAllRoles(tenantId);
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, roles);
+		}
+		catch (IcmsCustomException e) {
+			log.info("Error occurred while fetching role {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (Exception e) {
+			log.info("Error occurred while fetching role {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+					Constants.EXCEPTION);
+		}
+		log.info("End of fetching role and response {}", responseEntity);
 		return responseEntity;
 	}
 }
