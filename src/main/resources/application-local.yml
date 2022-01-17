@@ -13,5 +13,7 @@ perksoft:
         musician-new: /services/api/form/musician
         musician-update: /services/api/form/musician/{musicianId}
         musician-members: /services/api/related/tickets/{musicianId}
-        musician-members-new: /services/api/related/modify
+        musician-subdtls-modify: /services/api/related/modify
         musician-by-filter: /services/api/form/dynamic/Musician
+        contract-create: /services/api/form/contract
+        contract-view: /services/api/form/contract/{contractId}
