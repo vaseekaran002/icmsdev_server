@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.perksoft.icms.models.Contract;
+import com.perksoft.icms.models.Invoice;
 import com.perksoft.icms.models.Musician;
 import com.perksoft.icms.service.MusicianService;
 
@@ -74,6 +75,22 @@ public class MusicianController {
 			throws JsonProcessingException 
 	{
 		return service.getContract(musicianId, contractId);		
+	}
+	
+	@PostMapping(value = "/musician/{musicianId}/invoice")
+	public ResponseEntity<String> createIvoice(@PathVariable(name = "musicianId") String musicianId,
+			@RequestBody Invoice invoice) 
+			throws JsonProcessingException 
+	{
+		return service.createInvoice(musicianId, invoice);		
+	}
+	
+	@GetMapping(value = "/musician/{musicianId}/invoice/{invoiceId}")
+	public ResponseEntity<String> getInvoice(@PathVariable(name = "musicianId") String musicianId,
+			@PathVariable(name = "invoiceId") String invoiceId) 
+			throws JsonProcessingException 
+	{
+		return service.getInvoice(musicianId, invoiceId);		
 	}
 	
 }

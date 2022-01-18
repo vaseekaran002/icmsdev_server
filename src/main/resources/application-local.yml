@@ -17,3 +17,5 @@ perksoft:
         musician-by-filter: /services/api/form/dynamic/Musician
         contract-create: /services/api/form/contract
         contract-view: /services/api/form/contract/{contractId}
+        invoice-create: /services/api/form/invoice
+        invoice-view: /services/api/form/invoice/{invoiceId}
