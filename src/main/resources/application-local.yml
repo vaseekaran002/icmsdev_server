@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://18.205.56.216:5432/icms
+    url: jdbc:postgresql://localhost:5432/kisscam
     username: postgres
     password: postgres
     
