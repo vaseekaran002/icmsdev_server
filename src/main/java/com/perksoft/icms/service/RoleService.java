@@ -34,7 +34,7 @@ public class RoleService {
 
 	public Role updateRole(RoleRequest roleRequest) {
 		Role role = new Role();
-		role.setId(roleRequest.getRoleId());
+		role.setId(roleRequest.getId());
 		role.setName(roleRequest.getName());
 		role.setRoleDescription(roleRequest.getDescription());
 		role.setStatus(roleRequest.getStatus());
@@ -51,7 +51,7 @@ public class RoleService {
 
 		return roles.stream().map(role -> {
 			RoleResponse roleResponse = new RoleResponse();
-			roleResponse.setRoleId(role.getId());
+			roleResponse.setId(role.getId());
 			roleResponse.setName(role.getName());
 			roleResponse.setDescription(role.getRoleDescription());
 			roleResponse.setStatus(role.getStatus());
