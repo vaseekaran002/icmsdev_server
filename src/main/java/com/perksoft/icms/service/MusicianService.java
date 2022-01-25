@@ -220,7 +220,7 @@ public class MusicianService {
 		
 		JsonNode jsonNode = objectMapper.readTree(response.getData());
 		
-		linkMusician(ACTION_CREATE, FORMNAME_CONTRACT, musicianId, jsonNode.get("contractId").asText());
+		linkMusician(ACTION_CREATE, FORMNAME_CONTRACT, musicianId, jsonNode.get("id").asText());
 		
 		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, "");
 	}
@@ -267,7 +267,7 @@ public class MusicianService {
 		
 		JsonNode jsonNode = objectMapper.readTree(response.getData());
 		
-		linkMusician(ACTION_CREATE, FORMNAME_INVOICE, musicianId, jsonNode.get("invoiceId").asText());
+		linkMusician(ACTION_CREATE, FORMNAME_INVOICE, musicianId, jsonNode.get("id").asText());
 		
 		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, "");
 	}

@@ -10,4 +10,6 @@ public class Invoice {
 	private String totalFeesDue;
 	private String description;
 	private String requestedDueDate;
+	private String dueDate;
+	private String contractId;
 }
