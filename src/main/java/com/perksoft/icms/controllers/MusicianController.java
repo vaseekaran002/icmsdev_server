@@ -93,4 +93,18 @@ public class MusicianController {
 		return service.getInvoice(musicianId, invoiceId);		
 	}
 	
+	@GetMapping(value = "/musician/{musicianId}/invoices")
+	public ResponseEntity<String> getMusicianInvoices(@PathVariable(name = "musicianId") String musicianId) 
+			throws JsonProcessingException 
+	{
+		return service.getMusicianMembers(musicianId);		
+	}
+	
+	@GetMapping(value = "/musician/{musicianId}/contracts")
+	public ResponseEntity<String> getMusicianContracts(@PathVariable(name = "musicianId") String musicianId) 
+			throws JsonProcessingException 
+	{
+		return service.getMusicianMembers(musicianId);		
+	}
+	
 }
