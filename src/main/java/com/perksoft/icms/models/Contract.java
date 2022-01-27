@@ -12,5 +12,6 @@ public class Contract {
 	private String fees;
 	private String channelName;
 	private String description;
+	private String contractId;
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.models.Contract;
 import com.perksoft.icms.models.Invoice;
 import com.perksoft.icms.models.Musician;
@@ -97,14 +98,14 @@ public class MusicianController {
 	public ResponseEntity<String> getMusicianInvoices(@PathVariable(name = "musicianId") String musicianId) 
 			throws JsonProcessingException 
 	{
-		return service.getMusicianMembers(musicianId);		
+		return service.getMusicianRelatedRecords(musicianId, Constants.RECORD_TYPE_INVOICE);		
 	}
 	
 	@GetMapping(value = "/musician/{musicianId}/contracts")
 	public ResponseEntity<String> getMusicianContracts(@PathVariable(name = "musicianId") String musicianId) 
 			throws JsonProcessingException 
 	{
-		return service.getMusicianMembers(musicianId);		
+		return service.getMusicianRelatedRecords(musicianId, Constants.RECORD_TYPE_CONTRACT);	
 	}
 	
 }

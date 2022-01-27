@@ -19,5 +19,5 @@ perksoft:
         contract-view: /services/api/form/contract/{contractId}
         invoice-create: /services/api/form/invoice
         invoice-view: /services/api/form/invoice/{invoiceId}
-		musician-invoices: /services/api/related/tickets/{musicianId}
-		musician-conttracts: /services/api/related/tickets/{musicianId}
+        musician-invoices: /services/api/related/tickets/{musicianId}
+        musician-conttracts: /services/api/related/tickets/{musicianId}
