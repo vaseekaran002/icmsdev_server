@@ -10,5 +10,5 @@ public class LogoutRequest {
 	@NotBlank
 	private String username;
 	@NotBlank
-	private String token;
+	private String accessToken;
 }

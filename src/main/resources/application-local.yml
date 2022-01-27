@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/kisscam
+    url: jdbc:postgresql://18.205.56.216:5432/icms
     username: postgres
     password: postgres
     
@@ -10,4 +10,14 @@ perksoft:
       endpoints:
         base-url: http://34.205.19.99:8080
         musician-info: /services/api/form/Musician/{musicianId}
+        musician-new: /services/api/form/musician
+        musician-update: /services/api/form/musician/{musicianId}
+        musician-members: /services/api/related/tickets/{musicianId}
+        musician-subdtls-modify: /services/api/related/modify
         musician-by-filter: /services/api/form/dynamic/Musician
+        contract-create: /services/api/form/contract
+        contract-view: /services/api/form/contract/{contractId}
+        invoice-create: /services/api/form/invoice
+        invoice-view: /services/api/form/invoice/{invoiceId}
+		musician-invoices: /services/api/related/tickets/{musicianId}
+		musician-conttracts: /services/api/related/tickets/{musicianId}

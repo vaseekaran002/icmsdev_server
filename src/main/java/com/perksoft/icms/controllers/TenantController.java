@@ -121,10 +121,12 @@ public class TenantController {
 				tenant.setName(tenantRequest.getName());
 				tenant.setDescription(tenantRequest.getDescription());
 				tenant.setLogo(tenantRequest.getLogo());
+				tenant.setStatus(tenantRequest.getStatus());
+				tenant.setFavIcon(tenantRequest.getFavIcon());
 				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 						tenantRepository.save(tenant));
 			} else {
-				log.info("Error occurred while Creating/Updating tenant {}", "Tenant already exist");
+				log.info("Error occurred while Creating/Updating tenant {}", "Tenant is not exist to update");
 				responseEntity = commonUtil.generateEntityResponse("Tenant already exist", Constants.FAILURE,
 						Constants.FAILURE);
 			}

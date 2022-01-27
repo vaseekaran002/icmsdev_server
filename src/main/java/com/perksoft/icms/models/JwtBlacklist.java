@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "jwt_blacklist")
@@ -15,6 +16,7 @@ public class JwtBlacklist {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Size(max = 500)
 	private String token;
 	private String username;
 	private LocalDateTime logoutTime;

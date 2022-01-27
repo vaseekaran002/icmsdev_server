@@ -21,6 +21,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +38,7 @@ import com.perksoft.icms.payload.request.LoginRequest;
 import com.perksoft.icms.payload.request.LogoutRequest;
 import com.perksoft.icms.payload.request.SignupRequest;
 import com.perksoft.icms.payload.response.JwtResponse;
-import com.perksoft.icms.repository.MetaDataRepository;
+import com.perksoft.icms.payload.response.RoleResponse;
 import com.perksoft.icms.security.services.UserDetailsImpl;
 import com.perksoft.icms.service.JwtTokenService;
 import com.perksoft.icms.service.RoleService;
@@ -65,7 +66,6 @@ public class AuthController {
 
 	@Autowired
 	private RoleService roleService;
-	
 
 	@Autowired
 	private PasswordEncoder encoder;
@@ -75,7 +75,7 @@ public class AuthController {
 
 	@Autowired
 	private CommonUtil commonUtil;
-
+	
 	@ApiOperation(value = "sign user", response = List.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves token and user details"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -83,25 +83,14 @@ public class AuthController {
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
 			@ApiResponse(code = 409, message = "Business validaiton error occured"),
 			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
-	@PostMapping("/login")
-	public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+	@PostMapping("/signin")
+	public ResponseEntity<String> signInAuthenticateUser(@Valid @RequestBody LoginRequest loginRequest,
 			@PathVariable("tenantid") String tenantId) {
 		log.info("Started authenticateUser for tenantId {} and username is {}", tenantId, loginRequest.getUsername());
 		ResponseEntity<String> responseEntity = null;
 
 		try {
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			String jwt = jwtTokenService.generateToken(authentication);
-
-			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-			List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-					.collect(Collectors.toList());
-			List<MetaData> metadatas = roleService.getMetatdataByRoleNames(roles);
-			Set<MetaData> finalmetadata = new HashSet<MetaData>(metadatas);
-			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
-					userDetails.getEmail(), roles, finalmetadata);
+			JwtResponse jwtResponse = getJWTResponse(loginRequest.getUsername(), loginRequest.getPassword());
 			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
 					jwtResponse);
 
@@ -118,6 +107,54 @@ public class AuthController {
 		}
 		log.info("End of authenticateUser and response {}", responseEntity);
 		return responseEntity;
+	}
+
+	@ApiOperation(value = "sign user", response = List.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieves token and user details"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+			@ApiResponse(code = 409, message = "Business validaiton error occured"),
+			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
+	@PostMapping("/login")
+	public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+			@PathVariable("tenantid") String tenantId) {
+		log.info("Started authenticateUser for tenantId {} and username is {}", tenantId, loginRequest.getUsername());
+		ResponseEntity<String> responseEntity = null;
+
+		try {
+			JwtResponse jwtResponse = getJWTResponse(loginRequest.getUsername(), loginRequest.getPassword());
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+					jwtResponse);
+
+		} catch (IcmsCustomException e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (BadCredentialsException e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (Exception e) {
+			log.info("Error occurred while authenticating user {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+					Constants.EXCEPTION);
+		}
+		log.info("End of authenticateUser and response {}", responseEntity);
+		return responseEntity;
+	}
+
+	private JwtResponse getJWTResponse(String username, String password) {
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String jwt = jwtTokenService.generateToken(authentication);
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+				.collect(Collectors.toList());
+		List<MetaData> metadatas = roleService.getMetatdataByRoleNames(roles);
+		Set<MetaData> finalmetadata = new HashSet<>(metadatas);
+		return new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles,
+				finalmetadata);
 	}
 
 	@ApiOperation(value = "Successfully created new user", response = List.class)
@@ -140,9 +177,9 @@ public class AuthController {
 						encoder.encode(signUpRequest.getPassword()));
 				Set<Role> roles = new HashSet<>();
 				List<String> strRoles = signUpRequest.getRoles();
-				
-				if(strRoles!= null && !strRoles.isEmpty()) {
-					
+
+				if (strRoles != null && !strRoles.isEmpty()) {
+
 					for (String roleName : signUpRequest.getRoles()) {
 						Optional<Role> userRole = roleService.getRoleByName(roleName);
 
@@ -151,15 +188,16 @@ public class AuthController {
 						}
 					}
 					user.setRoles(roles);
-				}				
-				
-				
+				}
+
 				user.setFirstName(signUpRequest.getFirstName());
 				user.setLastName(signUpRequest.getLastName());
 				user.setMobileNumber(signUpRequest.getMobileNumber());
 				user.setTenantId(UUID.fromString(tenantId));
 				userService.saveUser(user);
-				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, user);
+				JwtResponse jwtResponse = getJWTResponse(signUpRequest.getEmail(), signUpRequest.getPassword());
+				responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS,
+						jwtResponse);
 			} catch (IcmsCustomException e) {
 				e.printStackTrace();
 				log.info("Error occurred while signing up user {}", e.getMessage());
@@ -195,7 +233,7 @@ public class AuthController {
 
 		try {
 			JwtBlacklist jwtBlacklist = new JwtBlacklist();
-			jwtBlacklist.setToken(logoutRequest.getToken());
+			jwtBlacklist.setToken(logoutRequest.getAccessToken());
 			jwtBlacklist.setUsername(logoutRequest.getUsername());
 			jwtBlacklist.setLogoutTime(LocalDateTime.now());
 			jwtBlacklist = jwtTokenService.saveJwtBlacklist(jwtBlacklist);
@@ -207,6 +245,33 @@ public class AuthController {
 		}
 
 		log.info("End of logout user and response {}", responseEntity);
+		return responseEntity;
+	}
+	
+	@ApiOperation(value = "Used to fetch all role without token", response = List.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully fetches roles"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+			@ApiResponse(code = 409, message = "Business validaiton error occured"),
+			@ApiResponse(code = 500, message = "Execepion occured while executing api service") })
+	@GetMapping("/role/list")
+	public ResponseEntity<String> getRolesByTenantId(@PathVariable("tenantid") String tenantId){
+		log.info("Started fetching post for tenant {}", tenantId);
+		ResponseEntity<String> responseEntity = null;
+		try {
+			List<RoleResponse> roles = roleService.getAllRoles(tenantId);
+			responseEntity = commonUtil.generateEntityResponse(Constants.SUCCESS_MESSAGE, Constants.SUCCESS, roles);
+		}
+		catch (IcmsCustomException e) {
+			log.info("Error occurred while fetching role {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.FAILURE, Constants.FAILURE);
+		} catch (Exception e) {
+			log.info("Error occurred while fetching role {}", e.getMessage());
+			responseEntity = commonUtil.generateEntityResponse(e.getMessage(), Constants.EXCEPTION,
+					Constants.EXCEPTION);
+		}
+		log.info("End of fetching role and response {}", responseEntity);
 		return responseEntity;
 	}
 }
