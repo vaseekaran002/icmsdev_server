@@ -2,6 +2,7 @@ package com.perksoft.icms.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,11 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.models.Contract;
 import com.perksoft.icms.models.Invoice;
 import com.perksoft.icms.models.Musician;
 import com.perksoft.icms.service.MusicianService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 public class MusicianController {
 	
@@ -97,14 +103,14 @@ public class MusicianController {
 	public ResponseEntity<String> getMusicianInvoices(@PathVariable(name = "musicianId") String musicianId) 
 			throws JsonProcessingException 
 	{
-		return service.getMusicianMembers(musicianId);		
+		return service.getMusicianRelatedRecords(musicianId, Constants.RECORD_TYPE_INVOICE);		
 	}
 	
 	@GetMapping(value = "/musician/{musicianId}/contracts")
 	public ResponseEntity<String> getMusicianContracts(@PathVariable(name = "musicianId") String musicianId) 
 			throws JsonProcessingException 
 	{
-		return service.getMusicianMembers(musicianId);		
+		return service.getMusicianRelatedRecords(musicianId, Constants.RECORD_TYPE_CONTRACT);	
 	}
 	
 }

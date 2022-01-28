@@ -9,7 +9,7 @@ public class Invoice {
 	private String contractDescription;
 	private String totalFeesDue;
 	private String description;
-	private String requestedDueDate;
 	private String dueDate;
 	private String contractId;
+	private String invoiceId;
 }
