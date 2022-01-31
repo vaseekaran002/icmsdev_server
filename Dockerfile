@@ -1,7 +1,7 @@
 FROM openjdk:8-jdk-alpine
 
 WORKDIR /app
-COPY *.jar ./
+COPY ./target/*.jar ./
 
 RUN chmod g+rwx -R .
 
