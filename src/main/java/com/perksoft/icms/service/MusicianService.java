@@ -208,10 +208,14 @@ public class MusicianService {
 		webClientSupport.processRequest(request, response);
 
 		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		
+		String contractId = jsonNode.get("id").asText();
+		
+		linkMusician(ACTION_CREATE, FORMNAME_CONTRACT, musicianId, contractId);
+		
+		contractRequest.setContractId(contractId);
 
-		linkMusician(ACTION_CREATE, FORMNAME_CONTRACT, musicianId, jsonNode.get("id").asText());
-
-		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, "");
+		return commonUtil.generateEntityResponse("Contracts", Constants.SUCCESS, contractRequest);
 	}
 
 	public ResponseEntity<String> getContract(String musicianId, String contractId) throws JsonProcessingException {
@@ -243,10 +247,14 @@ public class MusicianService {
 		webClientSupport.processRequest(request, response);
 
 		JsonNode jsonNode = objectMapper.readTree(response.getData());
+		
+		String invoiceId = jsonNode.get("id").asText();
 
-		linkMusician(ACTION_CREATE, FORMNAME_INVOICE, musicianId, jsonNode.get("id").asText());
+		linkMusician(ACTION_CREATE, FORMNAME_INVOICE, musicianId, invoiceId);
+		
+		invoice.setInvoiceId(invoiceId);
 
-		return commonUtil.generateEntityResponse("musicians", Constants.SUCCESS, "");
+		return commonUtil.generateEntityResponse("invoices", Constants.SUCCESS, invoice);
 	}
 
 	public ResponseEntity<String> getInvoice(String musicianId, String invoiceId) throws JsonProcessingException {
