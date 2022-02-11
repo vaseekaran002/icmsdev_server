@@ -126,16 +126,16 @@ public class MusicianService {
 		List<String> filters = new ArrayList<>();
 
 		if (StringUtils.isNotBlank(staksId)) {
-			filters.add(String.format("sid=%s", staksId));
+			filters.add(String.format("sid:%s", staksId));
 		}
 		if (StringUtils.isNotBlank(artistName)) {
-			filters.add(String.format("artistName=%s", artistName));
+			filters.add(String.format("artistName:%s", artistName));
 		}
 		if (StringUtils.isNotBlank(city)) {
-			filters.add(String.format("city=%s", city));
+			filters.add(String.format("city:%s", city));
 		}
 		if (StringUtils.isNotBlank(genre)) {
-			filters.add(String.format("genre=%s", genre));
+			filters.add(String.format("genre:%s", genre));
 		}
 
 		queryParams.add("filter", StringUtils.join(filters, ","));
