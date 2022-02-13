@@ -2,6 +2,7 @@ package com.perksoft.icms.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -20,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.perksoft.icms.contants.Constants;
 import com.perksoft.icms.models.Contract;
@@ -295,18 +297,27 @@ public class MusicianService {
 		webClientSupport.processRequest(request, response);
 	}
 
-	private Musician mapMusicianResponse(JsonNode jsonNode) {
-
-		Musician response = new Musician();
-		response.setRadaptiveId(jsonNode.get("id").asText());
-		response.setStaksPayId(jsonNode.get("sid").asText());
-		response.setUserName(jsonNode.get("userName").asText());
-		response.setArtistName(jsonNode.get("artistName").asText());
-		response.setFacebookLink(jsonNode.get("facebookLink").asText());
-		response.setHometown(jsonNode.get("hometown").asText());
-		response.setGenres(jsonNode.get("genres").asText());
-
-		return response;
+	private List<Musician> mapMusicianResponse(JsonNode jsonNode) {
+		ArrayNode arrayNode = (ArrayNode) jsonNode;
+		Iterator<JsonNode> iter = arrayNode.iterator();
+		List<Musician> musicians = new ArrayList<Musician>();
+		
+		while(iter.hasNext()) {
+			JsonNode jsonNodeIter = iter.next();
+			if(jsonNodeIter.get("hasNext") == null) {
+				Musician response = new Musician();
+				response.setRadaptiveId(jsonNodeIter.get("id").asText());
+				response.setStaksPayId(jsonNodeIter.get("sid").asText());
+				response.setUserName(jsonNodeIter.get("userName").asText());
+				response.setArtistName(jsonNodeIter.get("artistName").asText());
+				response.setFacebookLink(jsonNodeIter.get("facebookLink").asText());
+				response.setHometown(jsonNodeIter.get("hometown").asText());
+				response.setGenres(jsonNodeIter.get("genres").asText());
+				musicians.add(response);
+			}
+		}
+		
+		return musicians;
 	}
 
 	private List<Object> mapResponses(JsonNode jsonNodes, String recordType) {
