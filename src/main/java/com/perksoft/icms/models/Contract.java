@@ -13,5 +13,6 @@ public class Contract {
 	private String channelName;
 	private String description;
 	private String contractId;
+	private String staksPayId;
 
 }
